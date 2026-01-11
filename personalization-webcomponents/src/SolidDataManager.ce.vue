@@ -18,84 +18,14 @@
           <!-- Left Column: Form -->
           <div class="left-column">
             <form class="form-content">
-              <template
+              <dynamic-form-section
                 v-for="section in visibleSections"
-                :key="section"
-              >
-                <personal-information-form
-                  v-if="section === 'personalInfo'"
-                  v-model:firstName="formFields.firstName"
-                  v-model:lastName="formFields.lastName"
-                  v-model:dateOfBirth="formFields.dateOfBirth"
-                  v-model:gender="formFields.gender"
-                  v-model:maritalStatus="formFields.maritalStatus"
-                  v-model:nationality="formFields.nationality"
-                  v-model:residenceStatus="formFields.residenceStatus"
-                  v-model:residenceInGermany="formFields.residenceInGermany"
-                  :shouldShowField="shouldShowField"
-                />
-
-                <financial-information-form
-                  v-if="section === 'financialInfo'"
-                  v-model:grossMonthlyIncome="formFields.grossMonthlyIncome"
-                  v-model:netMonthlyIncome="formFields.netMonthlyIncome"
-                  v-model:assets="formFields.assets"
-                  v-model:monthlyRent="formFields.monthlyRent"
-                  :shouldShowField="shouldShowField"
-                />
-
-                <household-information-form
-                  v-if="section === 'householdInfo'"
-                  v-model:householdSize="formFields.householdSize"
-                  v-model:numberOfChildren="formFields.numberOfChildren"
-                  v-model:childrenAges="formFields.childrenAges"
-                  v-model:isSingleParent="formFields.isSingleParent"
-                  v-model:livesWithParents="formFields.livesWithParents"
-                  :shouldShowField="shouldShowField"
-                />
-
-                <education-employment-form
-                  v-if="section === 'educationEmployment'"
-                  v-model:employmentStatus="formFields.employmentStatus"
-                  v-model:educationLevel="formFields.educationLevel"
-                  v-model:isStudent="formFields.isStudent"
-                  :shouldShowField="shouldShowField"
-                />
-
-                <special-circumstances-form
-                  v-if="section === 'specialCircumstances'"
-                  v-model:hasDisability="formFields.hasDisability"
-                  v-model:disabilityDegree="formFields.disabilityDegree"
-                  v-model:isPregnant="formFields.isPregnant"
-                  v-model:hasCareNeeds="formFields.hasCareNeeds"
-                  v-model:pensionEligible="formFields.pensionEligible"
-                  v-model:citizenBenefitLast3Years="
-                    formFields.citizenBenefitLast3Years
-                  "
-                  v-model:hasFinancialHardship="formFields.hasFinancialHardship"
-                  v-model:workAbility="formFields.workAbility"
-                  :shouldShowField="shouldShowField"
-                />
-
-                <insurance-benefits-form
-                  v-if="section === 'insuranceBenefits'"
-                  v-model:healthInsurance="formFields.healthInsurance"
-                  v-model:hasCareInsurance="formFields.hasCareInsurance"
-                  v-model:receivesUnemploymentBenefit1="
-                    formFields.receivesUnemploymentBenefit1
-                  "
-                  v-model:receivesUnemploymentBenefit2="
-                    formFields.receivesUnemploymentBenefit2
-                  "
-                  v-model:receivesPension="formFields.receivesPension"
-                  v-model:receivesChildBenefit="formFields.receivesChildBenefit"
-                  v-model:receivesHousingBenefit="
-                    formFields.receivesHousingBenefit
-                  "
-                  v-model:receivesStudentAid="formFields.receivesStudentAid"
-                  :shouldShowField="shouldShowField"
-                />
-              </template>
+                :key="section.id"
+                :section="section"
+                :form-data="formFields"
+                :should-show-field="shouldShowField"
+                @update:form-data="updateFormData"
+              />
             </form>
           </div>
 
@@ -294,15 +224,13 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  FormSection,
-  PrefilledFields,
-} from "@/eligibility/EligibilityCheckRegistry";
+import type { PrefilledFields } from "@/eligibility/EligibilityCheckRegistry";
 import type {
   EligibilityResult,
   FormData,
   FormDataField,
 } from "@/types/EligibilityCheckInterface";
+import type { VisibleSection } from "@/types/FieldMetadata";
 
 import { getFile, overwriteFile } from "@inrupt/solid-client";
 // Solid Imports
@@ -313,23 +241,13 @@ import {
   logout,
   fetch as solidFetch,
 } from "@inrupt/solid-client-authn-browser";
-import {
-  MucBanner,
-  MucButton,
-  MucCallout,
-  MucIntro,
-} from "@muenchen/muc-patternlab-vue";
+import { MucBanner, MucButton, MucCallout } from "@muenchen/muc-patternlab-vue";
 import customIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/custom-icons.svg?raw";
 import mucIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/muc-icons.svg?raw";
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
-import EducationEmploymentForm from "@/components/forms/education-employment-form.vue";
-import FinancialInformationForm from "@/components/forms/financial-information-form.vue";
-import HouseholdInformationForm from "@/components/forms/household-information-form.vue";
-import InsuranceBenefitsForm from "@/components/forms/insurance-benefits-form.vue";
-// Import form components
-import PersonalInformationForm from "@/components/forms/personal-information-form.vue";
-import SpecialCircumstancesForm from "@/components/forms/special-circumstances-form.vue";
+// Import dynamic form component
+import DynamicFormSection from "@/components/forms/dynamic-form-section.vue";
 import { EligibilityCheckRegistry } from "@/eligibility/EligibilityCheckRegistry";
 
 const SOLID_DATA_FILE = "private/personalization/eligibility-data.json";
@@ -414,11 +332,11 @@ async function loadFromPod() {
   solidLoading.value = true;
   try {
     const podRoot = getPodRoot(solidWebId.value);
-    
+
     // Ensure we strictly use the origin (provider URL)
     const url = new URL(podRoot);
     const baseUrl = url.origin;
-    
+
     // SOLID_DATA_FILE does not have a leading slash, so we must add one
     const fileUrl = `${baseUrl}/${SOLID_DATA_FILE}`;
 
@@ -454,7 +372,7 @@ const eligibilityRegistry = new EligibilityCheckRegistry();
 
 const isCheckingEligibility = ref(false);
 
-const visibleSections = ref<FormSection[]>();
+const visibleSections = ref<VisibleSection[]>([]);
 
 watch(
   formFields,
@@ -467,6 +385,10 @@ watch(
 const shouldShowField = (fieldName: FormDataField): boolean => {
   return visibleFields.value.includes(fieldName);
 };
+
+function updateFormData(newFormData: FormData) {
+  formFields.value = newFormData;
+}
 
 onMounted(async () => {
   // Handle Solid Redirect

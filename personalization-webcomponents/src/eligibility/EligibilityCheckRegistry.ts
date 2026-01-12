@@ -35,8 +35,8 @@ export interface PrefilledEligibilityEvaluationResult {
   /** Sections with metadata (id, title, fields) for dynamic rendering */
   visibleSections: VisibleSection[];
   prefilledFields: PrefilledFields;
-  /** All unique fields that checks report as missing */
-  allMissingFields: FormDataField[];
+  /** The number of all unique fields that checks report as missing */
+  allMissingFieldsSize: number;
 }
 
 /**
@@ -240,7 +240,7 @@ export class EligibilityCheckRegistry {
         visibleSections: this.getVisibleSectionsWithMetadata(),
         visibleFields: Array.from(this.visibleFields),
         prefilledFields,
-        allMissingFields: Array.from(allMissingFields),
+        allMissingFieldsSize: allMissingFields.size,
       };
     }
 
@@ -251,7 +251,7 @@ export class EligibilityCheckRegistry {
       visibleSections: this.getVisibleSectionsWithMetadata(),
       visibleFields: Array.from(this.visibleFields),
       prefilledFields,
-      allMissingFields: Array.from(allMissingFields),
+      allMissingFieldsSize: allMissingFields.size,
     };
   }
 }

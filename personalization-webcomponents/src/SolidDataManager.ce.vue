@@ -22,7 +22,7 @@
         </div>
         <div class="progress-info">
           {{ filledFieldsCount }} von
-          {{ filledFieldsCount + allMissingFields.length }} Feldern ausgefüllt
+          {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
         </div>
 
         <div class="two-column-layout">
@@ -169,7 +169,8 @@
               <div
                 v-for="result in showAllResults
                   ? [...allEligibilityResults].sort((a, b) => {
-                      const getOrder = (r: typeof a) => r.eligible === true ? 2 : (r.eligible === false ? 1 : 0);
+                      const getOrder = (r: typeof a) =>
+                        r.eligible === true ? 2 : r.eligible === false ? 1 : 0;
                       return getOrder(b) - getOrder(a);
                     })
                   : eligibilityResults"
@@ -177,7 +178,7 @@
                 :class="[
                   'eligibility-card',
                   { 'not-eligible': result.eligible === false },
-                  { 'pending': result.eligible === undefined },
+                  { pending: result.eligible === undefined },
                 ]"
               >
                 <div class="eligibility-card-header">
@@ -187,10 +188,20 @@
                   <span
                     :class="[
                       'eligibility-badge',
-                      result.eligible === true ? 'eligible' : (result.eligible === false ? 'not-eligible' : 'pending'),
+                      result.eligible === true
+                        ? 'eligible'
+                        : result.eligible === false
+                          ? 'not-eligible'
+                          : 'pending',
                     ]"
                   >
-                    {{ result.eligible === true ? "Berechtigt" : (result.eligible === false ? "Nicht berechtigt" : "Informationen ausstehend") }}
+                    {{
+                      result.eligible === true
+                        ? "Berechtigt"
+                        : result.eligible === false
+                          ? "Nicht berechtigt"
+                          : "Informationen ausstehend"
+                    }}
                   </span>
                 </div>
                 <p
@@ -383,20 +394,23 @@ const messageType = ref<"success" | "info" | "warning" | "emergency">(
 const eligibilityResults = ref<EligibilityResult[]>([]);
 const allEligibilityResults = ref<EligibilityResult[]>([]);
 const visibleFields = ref<FormDataField[]>([]);
-const allMissingFields = ref<FormDataField[]>([]);
+const allMissingFieldsSize = ref<number>(0);
 const showAllResults = ref(false);
 const prefilledFields = ref<PrefilledFields>({});
 const eligibilityRegistry = new EligibilityCheckRegistry();
 
 const filledFieldsCount = computed(() => {
-  return Object.values(formFields.value).filter(
-    (value) => value !== undefined && value !== null && value !== ""
+  return visibleFields.value.filter(
+    (field) =>
+      formFields.value[field] !== undefined &&
+      formFields.value[field] !== null &&
+      formFields.value[field] !== ""
   ).length;
 });
 
 const progressPercent = computed(() => {
   const filled = filledFieldsCount.value;
-  const missing = allMissingFields.value.length;
+  const missing = allMissingFieldsSize.value;
   const total = filled + missing;
   if (total === 0) return 0;
   return Math.round((filled / total) * 100);
@@ -466,7 +480,9 @@ function checkEligibility() {
   allEligibilityResults.value = result.all;
   eligibilityResults.value = result.eligible;
   visibleFields.value = result.visibleFields;
-  allMissingFields.value = result.allMissingFields.filter(field => Object.keys(prefilledFields).includes(field));
+  console.log("PREFILL", prefillData);
+  console.log("MISSING SIZE", result.allMissingFieldsSize);
+  allMissingFieldsSize.value = result.allMissingFieldsSize - Object.entries(prefillData).length;
   console.log("form", visibleFields.value);
 
   setTimeout(() => {

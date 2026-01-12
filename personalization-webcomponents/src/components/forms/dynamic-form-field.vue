@@ -28,16 +28,29 @@
         class="m-label"
         >{{ label }}</label
       >
+      <!-- Use type="text" for decimal fields to allow comma input, type="number" for integers -->
       <input
+        v-if="validation?.step === 1"
         :id="fieldName"
         :value="modelValue"
         type="number"
-        :step="validation?.step ?? 'any'"
+        step="1"
         :min="validation?.min"
         :max="validation?.max"
         :placeholder="placeholder"
         class="m-textfield"
         @input="onNumberInput($event)"
+      />
+      <input
+        v-else
+        :id="fieldName"
+        :value="displayValue"
+        type="text"
+        inputmode="decimal"
+        :placeholder="placeholder"
+        class="m-textfield"
+        @input="onDecimalInput($event)"
+        @blur="onDecimalBlur($event)"
       />
       <prefilled-indicator v-if="isPrefilled" />
     </template>
@@ -156,10 +169,73 @@ const emit = defineEmits<{
   ];
 }>();
 
+// Display value for decimal text inputs - stores the raw text while user is typing
+const displayValue = ref<string>("");
+
+// Sync displayValue with modelValue when it changes externally
+watch(() => props.modelValue, (newVal) => {
+  if (typeof newVal === 'number') {
+    // Format with German comma as decimal separator (no thousands separator)
+    displayValue.value = String(newVal).replace('.', ',');
+  } else if (newVal === undefined) {
+    displayValue.value = "";
+  }
+}, { immediate: true });
+
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement;
   const value = target.value;
   emit("update:modelValue", value || undefined);
+}
+
+// For decimal text inputs - update display and emit parsed value
+function onDecimalInput(event: Event) {
+  const target = event.target as HTMLInputElement;
+  displayValue.value = target.value;
+  
+  // Also emit the parsed value so the form knows it's filled
+  if (target.value === '') {
+    emit("update:modelValue", undefined);
+    return;
+  }
+  // German format: remove thousands dots, replace decimal comma with dot
+  const normalizedValue = target.value.replace(/\./g, '').replace(',', '.');
+  const value = parseFloat(normalizedValue);
+  if (!isNaN(value)) {
+    emit("update:modelValue", value);
+  }
+}
+
+// On blur, parse and emit the value
+function onDecimalBlur(event: Event) {
+  const target = event.target as HTMLInputElement;
+  if (target.value === '') {
+    emit("update:modelValue", undefined);
+    return;
+  }
+  // German format: remove thousands dots, replace decimal comma with dot
+  const normalizedValue = target.value.replace(/\./g, '').replace(',', '.');
+  let value = parseFloat(normalizedValue);
+  
+  // If parsing failed, emit undefined
+  if (isNaN(value)) {
+    emit("update:modelValue", undefined);
+    return;
+  }
+  
+  // Enforce min value
+  if (props.validation?.min !== undefined && value < props.validation.min) {
+    value = props.validation.min;
+  }
+  
+  // Enforce max value
+  if (props.validation?.max !== undefined && value > props.validation.max) {
+    value = props.validation.max;
+  }
+  
+  // Keep display with German comma format (no thousands separator)
+  displayValue.value = String(value).replace('.', ',');
+  emit("update:modelValue", value);
 }
 
 function onNumberInput(event: Event) {
@@ -168,7 +244,17 @@ function onNumberInput(event: Event) {
     emit("update:modelValue", undefined);
     return;
   }
-  let value = parseFloat(target.value);
+  // Replace comma with dot for German decimal notation
+  const normalizedValue = target.value.replace(',', '.');
+  let value = parseFloat(normalizedValue);
+  
+  // If parsing failed, emit undefined
+  if (isNaN(value)) {
+    emit("update:modelValue", undefined);
+    return;
+  }
+  
+  const originalValue = value;
   
   // If step is 1 (integer field), round to nearest integer
   if (props.validation?.step === 1) {
@@ -185,8 +271,10 @@ function onNumberInput(event: Event) {
     value = props.validation.max;
   }
   
-  // Update the input field to show the corrected value
-  target.value = String(value);
+  // Only update the input field if value was corrected
+  if (value !== originalValue) {
+    target.value = String(value);
+  }
   emit("update:modelValue", value);
 }
 

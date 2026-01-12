@@ -433,10 +433,7 @@ watch(
 const shouldShowField = (fieldName: FormDataField): boolean => {
   if (!visibleFields.value.includes(fieldName)) return false;
   const metadata = getFieldMetadata(fieldName);
-  if (metadata.visibleWhen && !metadata.visibleWhen(formFields.value)) {
-    return false;
-  }
-  return true;
+  return !(metadata.visibleWhen && metadata.visibleWhen(formFields.value) === false);
 };
 
 function updateFormData(newFormData: FormData) {

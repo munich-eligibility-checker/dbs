@@ -271,3 +271,130 @@ export class YesNoFirstStrategy implements NextSectionStrategy {
     return this.sectionMap.get(sectionId);
   }
 }
+
+/**
+ * Strategy that asks a minimal set of key yes/no questions first for rapid filtering,
+ * then collects detailed information in subsequent sections.
+ * Unlike YesNoFirstStrategy, only 5 critical questions are asked upfront.
+ */
+export class RapidQuestionStrategy implements NextSectionStrategy {
+  private sectionStructure: SectionStructure = {
+    sections: [
+      {
+        id: "rapidQuestions",
+        title: "Schnelle Fragen",
+        fields: [
+          // Only the most critical yes/no fields for rapid filtering
+          "residenceInGermany",
+          "receivesUnemploymentBenefit2",
+          "receivesHousingBenefit",
+          "receivesStudentAid",
+          "receivesPension",
+        ],
+      },
+      {
+        id: "personalDetails",
+        title: "Persönliche Daten",
+        fields: [
+          "firstName",
+          "lastName",
+          "dateOfBirth",
+          "gender",
+          "maritalStatus",
+          "nationality",
+          "residenceStatus",
+        ],
+      },
+      {
+        id: "financialDetails",
+        title: "Finanzielle Angaben",
+        fields: [
+          "grossMonthlyIncome",
+          "netMonthlyIncome",
+          "assets",
+          "monthlyRent",
+        ],
+      },
+      {
+        id: "householdDetails",
+        title: "Haushalt & Familie",
+        fields: [
+          "householdSize",
+          "numberOfChildren",
+          "childrenAges",
+          "isSingleParent",
+          "livesWithParents",
+        ],
+      },
+      {
+        id: "workEducation",
+        title: "Arbeit & Bildung",
+        fields: [
+          "employmentStatus",
+          "educationLevel",
+          "workAbility",
+          "isStudent",
+        ],
+      },
+      {
+        id: "specialCircumstances",
+        title: "Besondere Umstände",
+        fields: [
+          "hasDisability",
+          "disabilityDegree",
+          "isPregnant",
+          "hasCareNeeds",
+          "pensionEligible",
+          "citizenBenefitLast3Years",
+          "hasFinancialHardship",
+        ],
+      },
+      {
+        id: "insuranceBenefits",
+        title: "Versicherung & Leistungen",
+        fields: [
+          "healthInsurance",
+          "hasCareInsurance",
+          "receivesUnemploymentBenefit1",
+          "receivesChildBenefit",
+        ],
+      },
+    ],
+  };
+
+  private sectionMap: Map<string, SectionDefinition>;
+
+  constructor() {
+    this.sectionMap = new Map(
+      this.sectionStructure.sections.map((section) => [section.id, section])
+    );
+  }
+
+  getSectionStructure(): SectionStructure {
+    return this.sectionStructure;
+  }
+
+  getNextSection(
+    consideredSections: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _formData: FormData,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _eligibilityResults: EligibilityResult[]
+  ): string | null {
+    for (const section of this.sectionStructure.sections) {
+      if (!consideredSections.includes(section.id)) {
+        return section.id;
+      }
+    }
+    return null;
+  }
+
+  getSectionFields(sectionId: string): FormDataField[] {
+    const section = this.sectionMap.get(sectionId);
+    return section ? section.fields : [];
+  }
+
+  getSectionById(sectionId: string): SectionDefinition | undefined {
+    return this.sectionMap.get(sectionId);
+  }
+}

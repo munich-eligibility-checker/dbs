@@ -12,16 +12,20 @@ import { BafoegCheck } from "@/eligibility/BafoegCheck";
 import { BerufsausbildungsbeihilfeCheck } from "@/eligibility/BerufsausbildungsbeihilfeCheck";
 import { BildungUndTeilhabeCheck } from "@/eligibility/BildungUndTeilhabeCheck";
 import { BuergergeldCheck } from "@/eligibility/BuergergeldCheck";
+import {
+  applyDefaultsForHiddenFields,
+  getFieldMetadata,
+} from "@/eligibility/FieldMetadataRegistry";
 import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck";
 import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck";
 import { KindergeldCheck } from "@/eligibility/KindergeldCheck";
 import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck";
 import {
   OrderedNextSectionStrategy,
+  RapidQuestionStrategy,
   YesNoFirstStrategy,
 } from "@/eligibility/NextSectionStrategy";
 import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
-import { getFieldMetadata, applyDefaultsForHiddenFields } from "@/eligibility/FieldMetadataRegistry";
 
 export type PrefilledFields = {
   [K in FormDataField]?: FormData[K];
@@ -58,7 +62,7 @@ export class EligibilityCheckRegistry {
   private nextSectionStrategy: NextSectionStrategy;
 
   constructor(strategy?: NextSectionStrategy) {
-    this.nextSectionStrategy = strategy ?? new OrderedNextSectionStrategy();
+    this.nextSectionStrategy = strategy ?? new RapidQuestionStrategy();
 
     // Register all eligibility checks here
     // All checks now use the generator-based pattern for lazy evaluation
@@ -166,11 +170,11 @@ export class EligibilityCheckRegistry {
 
       fieldsInSection.forEach(
         (field) =>
-        (prefilledFields = this.addAndPrefillField(
-          field,
-          prefilledFields,
-          prefillFormData
-        ))
+          (prefilledFields = this.addAndPrefillField(
+            field,
+            prefilledFields,
+            prefillFormData
+          ))
       );
     }
 
@@ -190,7 +194,7 @@ export class EligibilityCheckRegistry {
 
     while (
       this.visibleSectionIds.length + skippedSections.length <
-      this.getTotalSectionCount() &&
+        this.getTotalSectionCount() &&
       allCurrentSectionsFilled
     ) {
       const nextSection = this.nextSectionStrategy.getNextSection(

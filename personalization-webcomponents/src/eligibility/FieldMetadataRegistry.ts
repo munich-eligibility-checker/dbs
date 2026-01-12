@@ -86,7 +86,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "permanent_residence", label: "Niederlassungserlaubnis" },
       { value: "none", label: "Keine" },
     ],
-    visibleWhen: (data: FormData) => data.nationality === undefined ? undefined : (data.nationality !== "German"),
+    visibleWhen: (data: FormData) => data.nationality === undefined ? undefined : data.nationality !== "German",
     defaultWhenHidden: "residence_permit",
   },
   residenceInGermany: {
@@ -213,14 +213,14 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 50",
     validation: { min: 0, max: 100 },
-    visibleWhen: (data: FormData) => data.hasDisability,
+    visibleWhen: (data: FormData) => data.hasDisability === undefined ? undefined : data.hasDisability,
   },
   isPregnant: {
     name: "isPregnant",
     label: "Schwanger",
     type: "yesno",
     visibleWhen: (data: FormData) =>
-      data.gender === "female" || data.gender === "diverse",
+      data.gender === undefined ? undefined : (data.gender === "female" || data.gender === "diverse"),
   },
   hasCareNeeds: {
     name: "hasCareNeeds",
@@ -253,7 +253,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "none", label: "Nicht arbeitsfähig" },
     ],
     visibleWhen: (data: FormData) =>
-      data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
+      (data.receivesPension === undefined || data.dateOfBirth === undefined) ? undefined : (data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67),
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -304,7 +304,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesStudentAid",
     label: "Beziehe BAföG",
     type: "yesno",
-    visibleWhen: (data: FormData) => data.isStudent === true,
+    visibleWhen: (data: FormData) => data.isStudent === undefined ? undefined : data.isStudent === true,
   },
 };
 

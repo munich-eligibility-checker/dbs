@@ -18,12 +18,22 @@
           <div class="progress-bar-track">
             <div
               class="progress-bar-fill"
+              :class="{ 'progress-complete': isFormComplete }"
               :style="{ width: progressPercent + '%' }"
             />
           </div>
-          <div class="progress-info">
-            {{ filledFieldsCount }} von
-            {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
+          <div
+            class="progress-info"
+            :class="{ 'progress-info-complete': isFormComplete }"
+          >
+            <template v-if="isFormComplete">
+              <span class="completion-icon">✓</span>
+              Alle Angaben vollständig!
+            </template>
+            <template v-else>
+              {{ filledFieldsCount }} von
+              {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
+            </template>
           </div>
         </div>
 
@@ -410,6 +420,10 @@ const progressPercent = computed(() => {
   return Math.round((filled / total) * 100);
 });
 
+const isFormComplete = computed(() => {
+  return progressPercent.value === 100 && filledFieldsCount.value > 0;
+});
+
 const isCheckingEligibility = ref(false);
 
 const visibleSections = ref<VisibleSection[]>([]);
@@ -687,7 +701,11 @@ function showMessage(
   height: 100%;
   background: var(--mde-color-brand-mde-blue);
   border-radius: 6px;
-  transition: width 0.4s ease-out;
+  transition: width 0.4s ease-out, background-color 0.3s ease;
+}
+
+.progress-bar-fill.progress-complete {
+  background: var(--mde-color-signal-success, #28a745);
 }
 
 .progress-info {
@@ -696,6 +714,26 @@ function showMessage(
   font-size: 0.875rem;
   color: var(--mde-color-neutral-grey);
   text-align: center;
+  transition: color 0.3s ease;
+}
+
+.progress-info-complete {
+  color: var(--mde-color-signal-success, #28a745);
+  font-weight: 600;
+}
+
+.completion-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--mde-color-signal-success, #28a745);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .right-column {

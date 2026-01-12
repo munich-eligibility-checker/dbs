@@ -139,6 +139,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1",
     validation: { min: 0 },
+    visibleWhen: (data: FormData) => (data.householdSize ?? 0) > 1,
   },
   childrenAges: {
     name: "childrenAges",

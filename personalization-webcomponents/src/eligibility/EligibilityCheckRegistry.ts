@@ -16,7 +16,10 @@ import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck";
 import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck";
 import { KindergeldCheck } from "@/eligibility/KindergeldCheck";
 import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck";
-import { OrderedNextSectionStrategy } from "@/eligibility/NextSectionStrategy";
+import {
+  OrderedNextSectionStrategy,
+  YesNoFirstStrategy,
+} from "@/eligibility/NextSectionStrategy";
 import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
 
 export type PrefilledFields = {
@@ -52,7 +55,7 @@ export class EligibilityCheckRegistry {
   private nextSectionStrategy: NextSectionStrategy;
 
   constructor(strategy?: NextSectionStrategy) {
-    this.nextSectionStrategy = strategy ?? new OrderedNextSectionStrategy();
+    this.nextSectionStrategy = strategy ?? new YesNoFirstStrategy();
 
     // Register all eligibility checks here
     // All checks now use the generator-based pattern for lazy evaluation

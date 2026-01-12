@@ -162,3 +162,112 @@ export class OrderedNextSectionStrategy implements NextSectionStrategy {
     return this.sectionMap.get(sectionId);
   }
 }
+
+/**
+ * Strategy that asks all yes/no questions first for quick filtering,
+ * then collects detailed information in subsequent sections.
+ */
+export class YesNoFirstStrategy implements NextSectionStrategy {
+  private sectionStructure: SectionStructure = {
+    sections: [
+      {
+        id: "quickQuestions",
+        title: "Schnelle Fragen",
+        fields: [
+          // All yes/no fields grouped together for quick answers
+          "residenceInGermany",
+          "livesWithParents",
+          "isSingleParent",
+          "isStudent",
+          "hasDisability",
+          "isPregnant",
+          "hasCareNeeds",
+          "pensionEligible",
+          "citizenBenefitLast3Years",
+          "hasFinancialHardship",
+          "receivesUnemploymentBenefit1",
+          "receivesUnemploymentBenefit2",
+          "receivesPension",
+          "hasCareInsurance",
+          "receivesChildBenefit",
+          "receivesHousingBenefit",
+          "receivesStudentAid",
+        ],
+      },
+      {
+        id: "personalDetails",
+        title: "Persönliche Daten",
+        fields: [
+          "firstName",
+          "lastName",
+          "dateOfBirth",
+          "gender",
+          "maritalStatus",
+          "nationality",
+          "residenceStatus",
+        ],
+      },
+      {
+        id: "financialDetails",
+        title: "Finanzielle Angaben",
+        fields: [
+          "grossMonthlyIncome",
+          "netMonthlyIncome",
+          "assets",
+          "monthlyRent",
+        ],
+      },
+      {
+        id: "householdDetails",
+        title: "Haushalt & Familie",
+        fields: ["householdSize", "numberOfChildren", "childrenAges"],
+      },
+      {
+        id: "workEducation",
+        title: "Arbeit & Bildung",
+        fields: ["employmentStatus", "educationLevel", "workAbility"],
+      },
+      {
+        id: "additionalInfo",
+        title: "Weitere Angaben",
+        fields: ["disabilityDegree", "healthInsurance"],
+      },
+    ],
+  };
+
+  private sectionMap: Map<string, SectionDefinition>;
+
+  constructor() {
+    this.sectionMap = new Map(
+      this.sectionStructure.sections.map((section) => [section.id, section])
+    );
+  }
+
+  getSectionStructure(): SectionStructure {
+    return this.sectionStructure;
+  }
+
+  getNextSection(
+    consideredSections: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _formData: FormData,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _eligibilityResults: EligibilityResult[]
+  ): string | null {
+    for (const section of this.sectionStructure.sections) {
+      if (!consideredSections.includes(section.id)) {
+        return section.id;
+      }
+    }
+    return null;
+  }
+
+  getSectionFields(sectionId: string): FormDataField[] {
+    const section = this.sectionMap.get(sectionId);
+    return section ? section.fields : [];
+  }
+
+  getSectionById(sectionId: string): SectionDefinition | undefined {
+    return this.sectionMap.get(sectionId);
+  }
+}

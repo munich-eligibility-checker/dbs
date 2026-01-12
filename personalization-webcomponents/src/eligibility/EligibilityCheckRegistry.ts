@@ -21,6 +21,7 @@ import {
   YesNoFirstStrategy,
 } from "@/eligibility/NextSectionStrategy";
 import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
+import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
 
 export type PrefilledFields = {
   [K in FormDataField]?: FormData[K];
@@ -162,16 +163,23 @@ export class EligibilityCheckRegistry {
 
       fieldsInSection.forEach(
         (field) =>
-          (prefilledFields = this.addAndPrefillField(
-            field,
-            prefilledFields,
-            prefillFormData
-          ))
+        (prefilledFields = this.addAndPrefillField(
+          field,
+          prefilledFields,
+          prefillFormData
+        ))
       );
     }
 
     const allCurrentSectionsFilled = Array.from(this.visibleFields).every(
-      (visibleField) => formData[visibleField] !== undefined
+      (visibleField) => {
+        const metadata = getFieldMetadata(visibleField);
+        // If field is hidden due to visibleWhen condition, consider it as filled
+        if (metadata.visibleWhen && !metadata.visibleWhen(formData)) {
+          return true;
+        }
+        return formData[visibleField] !== undefined;
+      }
     );
     console.log("m", allMissingFields);
     console.log("v", this.visibleFields);
@@ -179,7 +187,7 @@ export class EligibilityCheckRegistry {
 
     while (
       this.visibleSectionIds.length + skippedSections.length <
-        this.getTotalSectionCount() &&
+      this.getTotalSectionCount() &&
       allCurrentSectionsFilled
     ) {
       const nextSection = this.nextSectionStrategy.getNextSection(

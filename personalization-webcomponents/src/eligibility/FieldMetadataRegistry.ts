@@ -69,8 +69,9 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "nationality",
     label: "Staatsangehörigkeit",
     type: "select",
+    explanation:
+      "Wenn sie neben deutscher Staatsangehörigkeit noch andere Staatsangehörigkeiten haben, wählen Sie Deutsch.",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "German", label: "Deutsch" },
       { value: "EU", label: "Europäisch (EU)" },
       { value: "Non-EU", label: "Nicht-EU" },
@@ -86,14 +87,18 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "permanent_residence", label: "Niederlassungserlaubnis" },
       { value: "none", label: "Keine" },
     ],
-    visibleWhen: (data: FormData) => data.nationality === undefined ? undefined : data.nationality !== "German",
+    visibleWhen: (data: FormData) =>
+      data.nationality === undefined
+        ? undefined
+        : data.nationality !== "German",
     defaultWhenHidden: "residence_permit",
   },
   residenceInGermany: {
     name: "residenceInGermany",
     label: "Gewöhnlicher Aufenthalt in Deutschland",
     type: "yesno",
-    explanation: "Ihr gewöhnlicher Aufenthalt ist dort, wo Sie sich dauerhaft aufhalten und Ihren Lebensmittelpunkt haben.",
+    explanation:
+      "Ihr gewöhnlicher Aufenthalt ist dort, wo Sie sich dauerhaft aufhalten und Ihren Lebensmittelpunkt haben.",
   },
 
   // Financial Information
@@ -103,7 +108,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 2000",
     validation: { min: 0 },
-    explanation: "Das Bruttoeinkommen ist Ihr Gehalt vor Abzug von Steuern und Sozialabgaben.",
+    explanation:
+      "Das Bruttoeinkommen ist Ihr Gehalt vor Abzug von Steuern und Sozialabgaben.",
   },
   netMonthlyIncome: {
     name: "netMonthlyIncome",
@@ -111,7 +117,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1500",
     validation: { min: 0 },
-    explanation: "Das Nettoeinkommen ist der Betrag, der nach Abzug aller Steuern und Sozialabgaben auf Ihrem Konto eingeht.",
+    explanation:
+      "Das Nettoeinkommen ist der Betrag, der nach Abzug aller Steuern und Sozialabgaben auf Ihrem Konto eingeht.",
   },
   assets: {
     name: "assets",
@@ -119,7 +126,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 5000",
     validation: { min: 0 },
-    explanation: "Zum Vermögen zählen Bargeld, Sparguthaben, Wertpapiere, Immobilien und andere Sachwerte.",
+    explanation:
+      "Zum Vermögen zählen Bargeld, Sparguthaben, Wertpapiere, Immobilien und andere Sachwerte.",
   },
   monthlyRent: {
     name: "monthlyRent",
@@ -136,7 +144,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 2",
     validation: { min: 1, step: 1 },
-    explanation: "Alle Personen, die dauerhaft in Ihrer Wohnung leben und gemeinsam wirtschaften (inkl. Sie selbst).",
+    explanation:
+      "Alle Personen, die dauerhaft in Ihrer Wohnung leben und gemeinsam wirtschaften (inkl. Sie selbst).",
   },
   numberOfChildren: {
     name: "numberOfChildren",
@@ -144,7 +153,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1",
     validation: { min: 0, step: 1 },
-    visibleWhen: (data: FormData) => data.householdSize === undefined ? undefined : (data.householdSize > 1),
+    visibleWhen: (data: FormData) =>
+      data.householdSize === undefined ? undefined : data.householdSize > 1,
     defaultWhenHidden: 0,
   },
   childrenAges: {
@@ -152,7 +162,10 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Alter der Kinder (kommagetrennt)",
     type: "numberArray",
     placeholder: "z.B. 5, 8, 12",
-    visibleWhen: (data: FormData) => data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
+    visibleWhen: (data: FormData) =>
+      data.numberOfChildren === undefined
+        ? undefined
+        : data.numberOfChildren > 0,
   },
   livesWithParents: {
     name: "livesWithParents",
@@ -163,7 +176,10 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "isSingleParent",
     label: "Sind Sie Alleinerziehend?",
     type: "yesno",
-    visibleWhen: (data: FormData) => data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
+    visibleWhen: (data: FormData) =>
+      data.numberOfChildren === undefined
+        ? undefined
+        : data.numberOfChildren > 0,
   },
 
   // Education & Employment
@@ -293,7 +309,9 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Beziehe Kindergeld",
     type: "yesno",
     visibleWhen: (data: FormData) =>
-      data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
+      data.numberOfChildren === undefined
+        ? undefined
+        : data.numberOfChildren > 0,
   },
   receivesHousingBenefit: {
     name: "receivesHousingBenefit",

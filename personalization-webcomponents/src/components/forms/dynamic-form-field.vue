@@ -8,14 +8,21 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
+        >{{ label
+        }}<span
+          v-if="explanation"
+          class="explanation-tooltip"
+          :data-tooltip="explanation"
+          >?</span
+        ></label
       >
       <input
         :id="fieldName"
         :value="modelValue"
         type="text"
         :placeholder="placeholder"
-        class="m-textfield"
+        :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
+        @blur="onBlur"
         @input="onInput($event)"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -26,7 +33,13 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
+        >{{ label
+        }}<span
+          v-if="explanation"
+          class="explanation-tooltip"
+          :data-tooltip="explanation"
+          >?</span
+        ></label
       >
       <!-- Use type="text" for decimal fields to allow comma input, type="number" for integers -->
       <input
@@ -38,7 +51,8 @@
         :min="validation?.min"
         :max="validation?.max"
         :placeholder="placeholder"
-        class="m-textfield"
+        :class="['m-textfield', { 'field-required': isTouched && modelValue === undefined }]"
+        @blur="onBlur"
         @input="onNumberInput($event)"
       />
       <input
@@ -48,7 +62,7 @@
         type="text"
         inputmode="decimal"
         :placeholder="placeholder"
-        class="m-textfield"
+        :class="['m-textfield', { 'field-required': isTouched && modelValue === undefined }]"
         @input="onDecimalInput($event)"
         @blur="onDecimalBlur($event)"
       />
@@ -60,13 +74,20 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
+        >{{ label
+        }}<span
+          v-if="explanation"
+          class="explanation-tooltip"
+          :data-tooltip="explanation"
+          >?</span
+        ></label
       >
       <input
         :id="fieldName"
         :value="modelValue"
         type="date"
-        class="m-textfield"
+        :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
+        @blur="onBlur"
         @input="onInput($event)"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -77,12 +98,20 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
+        >{{ label
+        }}<span
+          v-if="explanation"
+          class="explanation-tooltip"
+          :data-tooltip="explanation"
+          >?</span
+        ></label
       >
       <select
         :id="fieldName"
         :value="modelValue"
-        class="m-textfield"
+        :default-value="undefined"
+        :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
+        @blur="onBlur"
         @change="onSelectChange($event)"
       >
         <option
@@ -107,7 +136,15 @@
             class="m-checkbox"
             @change="onCheckboxChange($event)"
           />
-          <span>{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></span>
+          <span
+            >{{ label
+            }}<span
+              v-if="explanation"
+              class="explanation-tooltip"
+              :data-tooltip="explanation"
+              >?</span
+            ></span
+          >
         </label>
       </div>
       <prefilled-indicator v-if="isPrefilled" />
@@ -130,14 +167,20 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
+        >{{ label
+        }}<span
+          v-if="explanation"
+          class="explanation-tooltip"
+          :data-tooltip="explanation"
+          >?</span
+        ></label
       >
       <input
         :id="fieldName"
         v-model="numberArrayText"
         type="text"
         :placeholder="placeholder"
-        class="m-textfield"
+        :class="['m-textfield', { 'field-required': isTouched && (!modelValue || (Array.isArray(modelValue) && modelValue.length === 0)) }]"
         @blur="onNumberArrayBlur"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -172,6 +215,9 @@ const emit = defineEmits<{
   ];
 }>();
 
+// Track if the field has been focused/touched at least once
+const isTouched = ref<boolean>(false);
+
 // Display value for decimal text inputs - stores the raw text while user is typing
 const displayValue = ref<string>("");
 
@@ -188,6 +234,10 @@ watch(
   },
   { immediate: true }
 );
+
+function onBlur() {
+  isTouched.value = true;
+}
 
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -215,6 +265,7 @@ function onDecimalInput(event: Event) {
 
 // On blur, parse and emit the value
 function onDecimalBlur(event: Event) {
+  onBlur();
   const target = event.target as HTMLInputElement;
   if (target.value === "") {
     emit("update:modelValue", undefined);
@@ -288,12 +339,7 @@ function onNumberInput(event: Event) {
 function onSelectChange(event: Event) {
   const target = event.target as HTMLSelectElement;
   const value = target.value;
-  // Handle undefined option value
-  if (value === "" || value === "undefined") {
-    emit("update:modelValue", undefined);
-  } else {
-    emit("update:modelValue", value);
-  }
+  emit("update:modelValue", value);
 }
 
 function onCheckboxChange(event: Event) {
@@ -341,9 +387,17 @@ function parseNumberArray(value: string): number[] | undefined {
 }
 
 function onNumberArrayBlur() {
+  onBlur();
   const parsed = parseNumberArray(numberArrayText.value);
   emit("update:modelValue", parsed);
   // Format the text nicely after blur
   numberArrayText.value = formatNumberArray(parsed);
 }
 </script>
+
+<style scoped>
+.field-required {
+  border: 2px solid rgb(187, 67, 67) !important;
+  border-radius: 3px;
+}
+</style>

@@ -34,6 +34,8 @@ export interface PrefilledEligibilityEvaluationResult {
   /** Sections with metadata (id, title, fields) for dynamic rendering */
   visibleSections: VisibleSection[];
   prefilledFields: PrefilledFields;
+  /** All unique fields that checks report as missing */
+  allMissingFields: FormDataField[];
 }
 
 /**
@@ -55,7 +57,7 @@ export class EligibilityCheckRegistry {
   private nextSectionStrategy: NextSectionStrategy;
 
   constructor(strategy?: NextSectionStrategy) {
-    this.nextSectionStrategy = strategy ?? new YesNoFirstStrategy();
+    this.nextSectionStrategy = strategy ?? new OrderedNextSectionStrategy();
 
     // Register all eligibility checks here
     // All checks now use the generator-based pattern for lazy evaluation
@@ -227,6 +229,7 @@ export class EligibilityCheckRegistry {
         visibleSections: this.getVisibleSectionsWithMetadata(),
         visibleFields: Array.from(this.visibleFields),
         prefilledFields,
+        allMissingFields: Array.from(allMissingFields),
       };
     }
 
@@ -237,6 +240,7 @@ export class EligibilityCheckRegistry {
       visibleSections: this.getVisibleSectionsWithMetadata(),
       visibleFields: Array.from(this.visibleFields),
       prefilledFields,
+      allMissingFields: Array.from(allMissingFields),
     };
   }
 }

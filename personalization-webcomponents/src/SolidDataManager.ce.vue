@@ -14,6 +14,17 @@
         >
           {{ message }}
         </muc-banner>
+        <div class="progress-bar-track">
+          <div
+            class="progress-bar-fill"
+            :style="{ width: progressPercent + '%' }"
+          />
+        </div>
+        <div class="progress-info">
+          {{ filledFieldsCount }} von
+          {{ filledFieldsCount + allMissingFields.length }} Feldern ausgefüllt
+        </div>
+
         <div class="two-column-layout">
           <!-- Left Column: Form -->
           <div class="left-column">
@@ -244,7 +255,7 @@ import {
 import { MucBanner, MucButton, MucCallout } from "@muenchen/muc-patternlab-vue";
 import customIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/custom-icons.svg?raw";
 import mucIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/muc-icons.svg?raw";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 // Import dynamic form component
 import DynamicFormSection from "@/components/forms/dynamic-form-section.vue";
@@ -366,9 +377,24 @@ const messageType = ref<"success" | "info" | "warning" | "emergency">(
 const eligibilityResults = ref<EligibilityResult[]>([]);
 const allEligibilityResults = ref<EligibilityResult[]>([]);
 const visibleFields = ref<FormDataField[]>([]);
+const allMissingFields = ref<FormDataField[]>([]);
 const showAllResults = ref(false);
 const prefilledFields = ref<PrefilledFields>({});
 const eligibilityRegistry = new EligibilityCheckRegistry();
+
+const filledFieldsCount = computed(() => {
+  return Object.values(formFields.value).filter(
+    (value) => value !== undefined && value !== null && value !== ""
+  ).length;
+});
+
+const progressPercent = computed(() => {
+  const filled = filledFieldsCount.value;
+  const missing = allMissingFields.value.length;
+  const total = filled + missing;
+  if (total === 0) return 0;
+  return Math.round((filled / total) * 100);
+});
 
 const isCheckingEligibility = ref(false);
 
@@ -429,6 +455,7 @@ function checkEligibility() {
   allEligibilityResults.value = result.all;
   eligibilityResults.value = result.eligible;
   visibleFields.value = result.visibleFields;
+  allMissingFields.value = result.allMissingFields;
   console.log("form", visibleFields.value);
 
   setTimeout(() => {
@@ -539,6 +566,40 @@ function showMessage(
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.progress-label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--mde-color-neutral-grey-dark);
+}
+
+.progress-value {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--mde-color-brand-mde-blue);
+}
+
+.progress-bar-track {
+  height: 12px;
+  background: #efeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--mde-color-brand-mde-blue);
+  border-radius: 6px;
+  transition: width 0.4s ease-out;
+}
+
+.progress-info {
+  margin-bottom: 8px;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: var(--mde-color-neutral-grey);
+  text-align: center;
 }
 
 .right-column {

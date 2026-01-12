@@ -46,25 +46,12 @@
           <!-- Right Column: Results -->
           <div class="right-column">
             <!-- Solid Pod Integration Hub -->
-            <div
-              class="solid-sidebar-section"
-              style="
-                margin-bottom: 24px;
-                padding: 24px;
-                background: var(--mde-color-neutral-beau-blue-x-light);
-                border-radius: 4px;
-              "
-            >
-              <h2
-                style="
-                  font-size: 1.25rem;
-                  font-weight: 700;
-                  margin-bottom: 16px;
-                  color: var(--mde-color-neutral-grey-dark);
-                "
-              >
-                Solid Pod
-              </h2>
+            <div class="eligibility-results" style="margin-bottom: 24px;">
+              <div class="eligibility-header" style="margin-bottom: 8px;">
+                <div>
+                  <h2 class="eligibility-title" style="margin-bottom: 0;">Solid Pod</h2>
+                </div>
+              </div>
 
               <div v-if="!isSolidConnected">
                 <div
@@ -88,6 +75,11 @@
                 >
                   Anmelden
                 </muc-button>
+                <p class="eligibility-subtitle" style="margin-top: 16px;">
+                  <strong>Was ist ein Solid Pod?</strong> Ihr Pod ist Ihr persönlicher Datentresor. 
+                  Anstatt dass Ihre Daten den jeweiligen Apps gehören, speichern Sie diese in Ihrem eigenen Pod. 
+                  Sie entscheiden genau, was diese Website sehen oder tun darf – und Sie können den Zugriff jederzeit widerrufen.
+                </p>
               </div>
 
               <div

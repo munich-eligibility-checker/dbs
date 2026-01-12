@@ -88,6 +88,8 @@
         type="date"
         :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
         @blur="onBlur"
+        class="m-textfield"
+        style="width: 100%; max-width: 100%; box-sizing: border-box;"
         @input="onInput($event)"
       />
       <prefilled-indicator v-if="isPrefilled" />

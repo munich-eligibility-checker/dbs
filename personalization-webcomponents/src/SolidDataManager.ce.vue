@@ -56,7 +56,7 @@
           <!-- Right Column: Results -->
           <div class="right-column">
             <!-- Solid Pod Integration Hub -->
-            <div class="eligibility-results" style="margin-bottom: 24px;">
+            <div class="eligibility-results solid-pod-section" style="margin-bottom: 24px;">
               <div class="eligibility-header" style="margin-bottom: 8px;">
                 <div>
                   <h2 class="eligibility-title" style="margin-bottom: 0;">Solid Pod</h2>
@@ -516,6 +516,8 @@ function showMessage(
 /* Form styles - unscoped so they apply to child components */
 .m-form-group {
   margin-bottom: 24px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .m-label {
@@ -528,6 +530,7 @@ function showMessage(
 
 .m-textfield {
   width: 100%;
+  max-width: 100%;
   padding: 12px 16px;
   font-size: 1rem;
   border: 2px solid var(--mde-color-neutral-grey-light);
@@ -535,6 +538,16 @@ function showMessage(
   transition: border-color 0.3s ease;
   box-sizing: border-box;
   font-family: "Open Sans", sans-serif;
+}
+
+/* Date input specific styles to prevent overflow on mobile */
+input[type="date"].m-textfield {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  min-width: 0;
+  min-height: 48px;
+  line-height: 1.5;
 }
 
 .m-textfield:focus {
@@ -929,6 +942,46 @@ function showMessage(
 
   .two-column-layout {
     gap: 32px;
+  }
+
+  .eligibility-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toggle-all-button {
+    align-self: flex-start;
+  }
+
+  .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .solid-pod-section {
+    order: 2;
+  }
+
+  .eligibility-results:not(.solid-pod-section) {
+    order: 1;
+  }
+
+  .progress-bar-sticky {
+    padding: 8px 0;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .progress-info {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+  }
+
+  .progress-bar-track {
+    height: 8px;
   }
 }
 </style>

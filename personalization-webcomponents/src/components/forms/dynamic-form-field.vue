@@ -114,17 +114,18 @@
       >
       <input
         :id="fieldName"
-        :value="formatNumberArray(modelValue as number[] | undefined)"
+        v-model="numberArrayText"
         type="text"
         :placeholder="placeholder"
         class="m-textfield"
-        @input="onNumberArrayInput($event)"
+        @blur="onNumberArrayBlur"
       />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import type { FieldOption, FieldValidation } from "@/types/FieldMetadata";
 
 import YesNoInput from "@/components/YesNoInput.vue";
@@ -174,22 +175,45 @@ function onCheckboxChange(event: Event) {
   emit("update:modelValue", target.checked);
 }
 
+// Local state for numberArray text input to allow free typing
+const numberArrayText = ref(formatNumberArray(props.modelValue as number[] | undefined));
+
+// Sync local text when modelValue changes externally
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (props.fieldType === "numberArray") {
+      const formatted = formatNumberArray(newValue as number[] | undefined);
+      // Only update if the parsed values are different (avoid overwriting while typing)
+      const currentParsed = parseNumberArray(numberArrayText.value);
+      const newParsed = newValue as number[] | undefined;
+      if (JSON.stringify(currentParsed) !== JSON.stringify(newParsed)) {
+        numberArrayText.value = formatted;
+      }
+    }
+  }
+);
+
 function formatNumberArray(value: number[] | undefined): string {
   if (!value || value.length === 0) return "";
   return value.join(", ");
 }
 
-function onNumberArrayInput(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const value = target.value;
+function parseNumberArray(value: string): number[] | undefined {
   if (!value || value.trim() === "") {
-    emit("update:modelValue", undefined);
-    return;
+    return undefined;
   }
   const numbers = value
     .split(",")
-    .map((s) => parseInt(s.trim()))
+    .map((s) => parseInt(s.trim(), 10))
     .filter((n) => !isNaN(n));
-  emit("update:modelValue", numbers.length > 0 ? numbers : undefined);
+  return numbers.length > 0 ? numbers : undefined;
+}
+
+function onNumberArrayBlur() {
+  const parsed = parseNumberArray(numberArrayText.value);
+  emit("update:modelValue", parsed);
+  // Format the text nicely after blur
+  numberArrayText.value = formatNumberArray(parsed);
 }
 </script>

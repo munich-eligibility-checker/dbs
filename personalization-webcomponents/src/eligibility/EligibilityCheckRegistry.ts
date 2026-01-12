@@ -247,7 +247,8 @@ export class EligibilityCheckRegistry {
         visibleSections: this.getVisibleSectionsWithMetadata(),
         visibleFields: Array.from(this.visibleFields),
         prefilledFields,
-        allMissingFieldsSize: allMissingFields.size,
+        allMissingFieldsSize:
+          allMissingFields.size - Object.entries(newPrefilledFields).length,
       };
     }
 

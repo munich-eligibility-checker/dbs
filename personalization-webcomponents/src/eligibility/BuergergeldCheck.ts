@@ -76,7 +76,7 @@ export class BuergergeldCheck extends AbstractEligibilityCheck {
         ["dateOfBirth", "assets"] as const,
         ({ dateOfBirth, assets }) => {
           const age = calculateAge(dateOfBirth);
-          const assetLimit = 15000 + (age! * 500);
+          const assetLimit = 15000 + (age * 500);
           return assets > assetLimit;
         },
         formData.dateOfBirth && formData.assets

@@ -14,15 +14,17 @@
         >
           {{ message }}
         </muc-banner>
-        <div class="progress-bar-track">
-          <div
-            class="progress-bar-fill"
-            :style="{ width: progressPercent + '%' }"
-          />
-        </div>
-        <div class="progress-info">
-          {{ filledFieldsCount }} von
-          {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
+        <div class="progress-bar-sticky">
+          <div class="progress-bar-track">
+            <div
+              class="progress-bar-fill"
+              :style="{ width: progressPercent + '%' }"
+            />
+          </div>
+          <div class="progress-info">
+            {{ filledFieldsCount }} von
+            {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
+          </div>
         </div>
 
         <div class="two-column-layout">
@@ -672,6 +674,17 @@ function showMessage(
   font-weight: 700;
   font-size: 1.25rem;
   color: var(--mde-color-brand-mde-blue);
+}
+
+.progress-bar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  padding: 16px 0;
+  margin: 0 -24px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .progress-bar-track {

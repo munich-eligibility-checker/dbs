@@ -466,7 +466,7 @@ function checkEligibility() {
   allEligibilityResults.value = result.all;
   eligibilityResults.value = result.eligible;
   visibleFields.value = result.visibleFields;
-  allMissingFields.value = result.allMissingFields;
+  allMissingFields.value = result.allMissingFields.filter(field => Object.keys(prefilledFields).includes(field));
   console.log("form", visibleFields.value);
 
   setTimeout(() => {

@@ -116,7 +116,7 @@
     <!-- Yes/No input -->
     <template v-else-if="fieldType === 'yesno'">
       <yes-no-input
-        :model-value="modelValue as boolean | undefined"
+        :model-value="modelValue === undefined ? undefined : !!modelValue"
         :label="label"
         :name="fieldName"
         :explanation="explanation"

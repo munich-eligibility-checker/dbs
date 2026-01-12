@@ -168,12 +168,16 @@
 
               <div
                 v-for="result in showAllResults
-                  ? [...allEligibilityResults].sort((a, b) => (b.eligible ? 1 : 0) - (a.eligible ? 1 : 0))
+                  ? [...allEligibilityResults].sort((a, b) => {
+                      const getOrder = (r: typeof a) => r.eligible === true ? 2 : (r.eligible === false ? 1 : 0);
+                      return getOrder(b) - getOrder(a);
+                    })
                   : eligibilityResults"
                 :key="result.subsidyName"
                 :class="[
                   'eligibility-card',
-                  { 'not-eligible': !result.eligible },
+                  { 'not-eligible': result.eligible === false },
+                  { 'pending': result.eligible === undefined },
                 ]"
               >
                 <div class="eligibility-card-header">
@@ -183,10 +187,10 @@
                   <span
                     :class="[
                       'eligibility-badge',
-                      result.eligible ? 'eligible' : 'not-eligible',
+                      result.eligible === true ? 'eligible' : (result.eligible === false ? 'not-eligible' : 'pending'),
                     ]"
                   >
-                    {{ result.eligible ? "Berechtigt" : "Nicht berechtigt" }}
+                    {{ result.eligible === true ? "Berechtigt" : (result.eligible === false ? "Nicht berechtigt" : "Informationen ausstehend") }}
                   </span>
                 </div>
                 <p
@@ -696,6 +700,11 @@ function showMessage(
   opacity: 0.85;
 }
 
+.eligibility-card.pending {
+  border-color: #e0e0e0;
+  opacity: 0.9;
+}
+
 .eligibility-card:last-child {
   margin-bottom: 0;
 }
@@ -706,6 +715,10 @@ function showMessage(
 }
 
 .eligibility-card.not-eligible:hover {
+  border-color: #c0c0c0;
+}
+
+.eligibility-card.pending:hover {
   border-color: #c0c0c0;
 }
 
@@ -736,7 +749,12 @@ function showMessage(
 }
 
 .eligibility-badge.not-eligible {
-  background-color: var(--mde-color-neutral-grey);
+  background-color: rgba(198, 40, 40, 0.85);
+}
+
+.eligibility-badge.pending {
+  background-color: rgba(251, 192, 45, 0.85);
+  color: #333;
 }
 
 .eligibility-card-reason {

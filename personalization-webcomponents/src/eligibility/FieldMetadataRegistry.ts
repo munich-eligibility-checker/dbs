@@ -87,6 +87,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "none", label: "Keine" },
     ],
     visibleWhen: (data: FormData) => data.nationality !== "German",
+    defaultWhenHidden: "residence_permit",
   },
   residenceInGermany: {
     name: "residenceInGermany",

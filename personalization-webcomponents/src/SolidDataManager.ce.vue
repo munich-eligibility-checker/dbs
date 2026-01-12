@@ -845,7 +845,7 @@ function showMessage(
 }
 
 .eligibility-badge.not-eligible {
-  background-color: rgba(198, 40, 40, 0.85);
+  background-color: #b03a3e;
 }
 
 .eligibility-badge.pending {

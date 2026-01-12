@@ -107,8 +107,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Monatliches Nettoeinkommen (€)",
     type: "number",
     placeholder: "z.B. 1500",
-    validation: { min: 0 },
-    visibleWhen: (data: FormData) => (data.grossMonthlyIncome ?? 0) > 0,
+    validation: { min: 0 }
   },
   assets: {
     name: "assets",

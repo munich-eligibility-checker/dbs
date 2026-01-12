@@ -48,6 +48,8 @@ export interface FieldMetadata {
   validation?: FieldValidation;
   /** Optional: Condition when this field should be visible based on other form data */
   visibleWhen?: (formData: FormData) => boolean;
+  /** Optional: Default value to use when field is hidden due to visibleWhen returning false */
+  defaultWhenHidden?: string | number | boolean | number[];
 }
 
 /**

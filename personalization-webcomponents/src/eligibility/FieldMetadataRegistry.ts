@@ -140,6 +140,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     placeholder: "z.B. 1",
     validation: { min: 0 },
     visibleWhen: (data: FormData) => (data.householdSize ?? 0) > 1,
+    defaultWhenHidden: 0,
   },
   childrenAges: {
     name: "childrenAges",
@@ -304,4 +305,27 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
  */
 export function getFieldMetadata(field: FormDataField): FieldMetadata {
   return FIELD_METADATA[field];
+}
+
+/**
+ * Apply default values for fields that are hidden due to visibleWhen conditions.
+ * Returns a new FormData object with defaults applied for hidden fields.
+ */
+export function applyDefaultsForHiddenFields(formData: FormData): FormData {
+  const result = { ...formData };
+
+  for (const [fieldName, metadata] of Object.entries(FIELD_METADATA)) {
+    const field = fieldName as FormDataField;
+    // If field has a visibleWhen condition that returns false, and has a defaultWhenHidden
+    if (
+      metadata.visibleWhen &&
+      !metadata.visibleWhen(formData) &&
+      metadata.defaultWhenHidden !== undefined
+    ) {
+      // Apply the default value
+      (result as Record<string, unknown>)[field] = metadata.defaultWhenHidden;
+    }
+  }
+
+  return result;
 }

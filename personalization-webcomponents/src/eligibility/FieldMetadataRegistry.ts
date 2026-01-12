@@ -86,7 +86,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "permanent_residence", label: "Niederlassungserlaubnis" },
       { value: "none", label: "Keine" },
     ],
-    visibleWhen: (data: FormData) => data.nationality !== "German",
+    visibleWhen: (data: FormData) => data.nationality === undefined ? undefined : (data.nationality !== "German"),
     defaultWhenHidden: "residence_permit",
   },
   residenceInGermany: {
@@ -108,7 +108,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Monatliches Nettoeinkommen (€)",
     type: "number",
     placeholder: "z.B. 1500",
-    validation: { min: 0 }
+    validation: { min: 0 },
   },
   assets: {
     name: "assets",
@@ -139,7 +139,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1",
     validation: { min: 0, step: 1 },
-    visibleWhen: (data: FormData) => (data.householdSize ?? 0) > 1,
+    visibleWhen: (data: FormData) => data.householdSize === undefined ? undefined : (data.householdSize > 1),
     defaultWhenHidden: 0,
   },
   childrenAges: {
@@ -147,7 +147,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Alter der Kinder (kommagetrennt)",
     type: "numberArray",
     placeholder: "z.B. 5, 8, 12",
-    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
+    visibleWhen: (data: FormData) => data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
   },
   livesWithParents: {
     name: "livesWithParents",
@@ -158,7 +158,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "isSingleParent",
     label: "Sind Sie Alleinerziehend?",
     type: "yesno",
-    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
+    visibleWhen: (data: FormData) => data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
   },
 
   // Education & Employment
@@ -208,13 +208,14 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 50",
     validation: { min: 0, max: 100 },
-    visibleWhen: (data: FormData) => data.hasDisability === true,
+    visibleWhen: (data: FormData) => data.hasDisability,
   },
   isPregnant: {
     name: "isPregnant",
     label: "Schwanger",
     type: "yesno",
-    visibleWhen: (data: FormData) => data.gender === "female" || data.gender === "diverse",
+    visibleWhen: (data: FormData) =>
+      data.gender === "female" || data.gender === "diverse",
   },
   hasCareNeeds: {
     name: "hasCareNeeds",
@@ -246,7 +247,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "limited", label: "Eingeschränkt arbeitsfähig" },
       { value: "none", label: "Nicht arbeitsfähig" },
     ],
-    visibleWhen: (data: FormData) => data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
+    visibleWhen: (data: FormData) =>
+      data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -285,7 +287,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesChildBenefit",
     label: "Beziehe Kindergeld",
     type: "yesno",
-    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
+    visibleWhen: (data: FormData) =>
+      data.numberOfChildren === undefined ? undefined : (data.numberOfChildren > 0),
   },
   receivesHousingBenefit: {
     name: "receivesHousingBenefit",
@@ -319,7 +322,7 @@ export function applyDefaultsForHiddenFields(formData: FormData): FormData {
     // If field has a visibleWhen condition that returns false, and has a defaultWhenHidden
     if (
       metadata.visibleWhen &&
-      !metadata.visibleWhen(formData) &&
+      metadata.visibleWhen(formData) === false &&
       metadata.defaultWhenHidden !== undefined
     ) {
       // Apply the default value

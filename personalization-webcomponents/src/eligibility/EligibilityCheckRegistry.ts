@@ -1,21 +1,26 @@
+import type { NextSectionStrategy } from "@/eligibility/NextSectionStrategy";
 import type {
   EligibilityCheckInterface,
   EligibilityResult,
   FormData,
   FormDataField,
 } from "@/types/EligibilityCheckInterface";
+import type { VisibleSection } from "@/types/FieldMetadata";
 
-import { ArbeitslosengeldCheck } from "@/eligibility/ArbeitslosengeldCheck.ts";
-import { BafoegCheck } from "@/eligibility/BafoegCheck.ts";
-import { BerufsausbildungsbeihilfeCheck } from "@/eligibility/BerufsausbildungsbeihilfeCheck.ts";
-import { BildungUndTeilhabeCheck } from "@/eligibility/BildungUndTeilhabeCheck.ts";
-import { BuergergeldCheck } from "@/eligibility/BuergergeldCheck.ts";
-import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck.ts";
-import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck.ts";
-import { KindergeldCheck } from "@/eligibility/KindergeldCheck.ts";
-import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck.ts";
-import { OrderedNextSectionStrategy } from "@/eligibility/NextSectionStrategy.ts";
-import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck.ts";
+import { ArbeitslosengeldCheck } from "@/eligibility/ArbeitslosengeldCheck";
+import { BafoegCheck } from "@/eligibility/BafoegCheck";
+import { BerufsausbildungsbeihilfeCheck } from "@/eligibility/BerufsausbildungsbeihilfeCheck";
+import { BildungUndTeilhabeCheck } from "@/eligibility/BildungUndTeilhabeCheck";
+import { BuergergeldCheck } from "@/eligibility/BuergergeldCheck";
+import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck";
+import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck";
+import { KindergeldCheck } from "@/eligibility/KindergeldCheck";
+import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck";
+import {
+  OrderedNextSectionStrategy,
+  YesNoFirstStrategy,
+} from "@/eligibility/NextSectionStrategy";
+import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
 
 export type PrefilledFields = {
   [K in FormDataField]?: FormData[K];
@@ -26,10 +31,14 @@ export interface PrefilledEligibilityEvaluationResult {
   ineligible: EligibilityResult[];
   all: EligibilityResult[];
   visibleFields: FormDataField[];
-  visibleSections: FormSection[];
+  /** Sections with metadata (id, title, fields) for dynamic rendering */
+  visibleSections: VisibleSection[];
   prefilledFields: PrefilledFields;
 }
 
+/**
+ * @deprecated Use string section IDs from NextSectionStrategy.getSectionStructure() instead
+ */
 export type FormSection =
   | "personalInfo"
   | "financialInfo"
@@ -38,63 +47,16 @@ export type FormSection =
   | "specialCircumstances"
   | "insuranceBenefits";
 
-export type SectionFieldMap = Record<FormSection, FormDataField[]>;
-
 export class EligibilityCheckRegistry {
   private checks: EligibilityCheckInterface[] = [];
-  private visibleSections: FormSection[] = [];
+  private visibleSectionIds: string[] = [];
   private visibleFields = new Set<FormDataField>();
 
-  private nextSectionStrategy = new OrderedNextSectionStrategy();
+  private nextSectionStrategy: NextSectionStrategy;
 
-  private sectionFields: SectionFieldMap = {
-    personalInfo: [
-      "firstName",
-      "lastName",
-      "dateOfBirth",
-      "gender",
-      "maritalStatus",
-      "nationality",
-      "residenceStatus",
-      "residenceInGermany",
-    ],
-    financialInfo: [
-      "grossMonthlyIncome",
-      "netMonthlyIncome",
-      "assets",
-      "monthlyRent",
-    ],
-    householdInfo: [
-      "householdSize",
-      "numberOfChildren",
-      "childrenAges",
-      "isSingleParent",
-      "livesWithParents",
-    ],
-    educationEmployment: ["employmentStatus", "educationLevel", "isStudent"],
-    specialCircumstances: [
-      "hasDisability",
-      "disabilityDegree",
-      "isPregnant",
-      "hasCareNeeds",
-      "pensionEligible",
-      "citizenBenefitLast3Years",
-      "hasFinancialHardship",
-      "workAbility",
-    ],
-    insuranceBenefits: [
-      "healthInsurance",
-      "hasCareInsurance",
-      "receivesUnemploymentBenefit1",
-      "receivesUnemploymentBenefit2",
-      "receivesPension",
-      "receivesChildBenefit",
-      "receivesHousingBenefit",
-      "receivesStudentAid",
-    ],
-  };
+  constructor(strategy?: NextSectionStrategy) {
+    this.nextSectionStrategy = strategy ?? new YesNoFirstStrategy();
 
-  constructor() {
     // Register all eligibility checks here
     // All checks now use the generator-based pattern for lazy evaluation
     // of missing fields. This pattern provides better memory efficiency
@@ -113,6 +75,14 @@ export class EligibilityCheckRegistry {
 
   registerCheck(check: EligibilityCheckInterface): void {
     this.checks.push(check);
+  }
+
+  private getSectionFields(sectionId: string): FormDataField[] {
+    return this.nextSectionStrategy.getSectionFields(sectionId);
+  }
+
+  private getTotalSectionCount(): number {
+    return this.nextSectionStrategy.getSectionStructure().sections.length;
   }
 
   addAndPrefillField(
@@ -138,6 +108,23 @@ export class EligibilityCheckRegistry {
     return {
       ...prefilledFields,
     };
+  }
+
+  /**
+   * Convert visible section IDs to VisibleSection objects with metadata
+   */
+  private getVisibleSectionsWithMetadata(): VisibleSection[] {
+    return this.visibleSectionIds
+      .map((sectionId) => {
+        const section = this.nextSectionStrategy.getSectionById(sectionId);
+        if (!section) return null;
+        return {
+          id: section.id,
+          title: section.title,
+          fields: section.fields,
+        };
+      })
+      .filter((section): section is VisibleSection => section !== null);
   }
 
   refreshEligibilityForm(
@@ -166,8 +153,8 @@ export class EligibilityCheckRegistry {
     const eligible = allResults.filter((result) => result.eligible === true);
     const ineligible = allResults.filter((result) => result.eligible === false);
 
-    for (const section of this.visibleSections) {
-      const fieldsInSection = this.sectionFields[section].filter(
+    for (const sectionId of this.visibleSectionIds) {
+      const fieldsInSection = this.getSectionFields(sectionId).filter(
         (field) => allMissingFields.has(field) || this.visibleFields.has(field)
       );
 
@@ -186,15 +173,15 @@ export class EligibilityCheckRegistry {
     );
     console.log("m", allMissingFields);
     console.log("v", this.visibleFields);
-    const skippedSections: FormSection[] = [];
+    const skippedSections: string[] = [];
 
     while (
-      this.visibleSections.length + skippedSections.length <
-        Object.keys(this.sectionFields).length &&
+      this.visibleSectionIds.length + skippedSections.length <
+        this.getTotalSectionCount() &&
       allCurrentSectionsFilled
     ) {
       const nextSection = this.nextSectionStrategy.getNextSection(
-        [...this.visibleSections, ...skippedSections],
+        [...this.visibleSectionIds, ...skippedSections],
         formData,
         allResults
       );
@@ -203,7 +190,7 @@ export class EligibilityCheckRegistry {
         break;
       }
 
-      const newFields = this.sectionFields[nextSection].filter((field) =>
+      const newFields = this.getSectionFields(nextSection).filter((field) =>
         allMissingFields.has(field)
       );
 
@@ -213,7 +200,7 @@ export class EligibilityCheckRegistry {
         continue;
       }
 
-      this.visibleSections.push(nextSection);
+      this.visibleSectionIds.push(nextSection);
       let newPrefilledFields = {};
       for (const field of newFields) {
         newPrefilledFields = this.addAndPrefillField(
@@ -237,7 +224,7 @@ export class EligibilityCheckRegistry {
         eligible,
         ineligible,
         all: allResults,
-        visibleSections: this.visibleSections,
+        visibleSections: this.getVisibleSectionsWithMetadata(),
         visibleFields: Array.from(this.visibleFields),
         prefilledFields,
       };
@@ -247,7 +234,7 @@ export class EligibilityCheckRegistry {
       eligible,
       ineligible,
       all: allResults,
-      visibleSections: this.visibleSections,
+      visibleSections: this.getVisibleSectionsWithMetadata(),
       visibleFields: Array.from(this.visibleFields),
       prefilledFields,
     };

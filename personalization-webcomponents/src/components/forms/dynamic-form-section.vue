@@ -12,6 +12,7 @@
       :placeholder="getFieldMetadata(fieldName).placeholder"
       :options="getFieldMetadata(fieldName).options"
       :validation="getFieldMetadata(fieldName).validation"
+      :explanation="getFieldMetadata(fieldName).explanation"
       :visible="shouldShowField(fieldName)"
       :is-prefilled="prefilledFields[fieldName] !== undefined"
       @update:model-value="updateField(fieldName, $event)"

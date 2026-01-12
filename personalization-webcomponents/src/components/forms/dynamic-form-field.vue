@@ -8,7 +8,7 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}</label
+        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
       >
       <input
         :id="fieldName"
@@ -26,7 +26,7 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}</label
+        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
       >
       <!-- Use type="text" for decimal fields to allow comma input, type="number" for integers -->
       <input
@@ -60,7 +60,7 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}</label
+        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
       >
       <input
         :id="fieldName"
@@ -77,7 +77,7 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}</label
+        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
       >
       <select
         :id="fieldName"
@@ -107,7 +107,7 @@
             class="m-checkbox"
             @change="onCheckboxChange($event)"
           />
-          <span>{{ label }}</span>
+          <span>{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></span>
         </label>
       </div>
       <prefilled-indicator v-if="isPrefilled" />
@@ -119,6 +119,7 @@
         :model-value="modelValue as boolean | undefined"
         :label="label"
         :name="fieldName"
+        :explanation="explanation"
         @update:model-value="$emit('update:modelValue', $event)"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -129,7 +130,7 @@
       <label
         :for="fieldName"
         class="m-label"
-        >{{ label }}</label
+        >{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label
       >
       <input
         :id="fieldName"
@@ -159,6 +160,7 @@ const props = defineProps<{
   placeholder?: string;
   options?: FieldOption[];
   validation?: FieldValidation;
+  explanation?: string;
   visible: boolean;
   isPrefilled?: boolean;
 }>();

@@ -93,6 +93,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "residenceInGermany",
     label: "Gewöhnlicher Aufenthalt in Deutschland",
     type: "yesno",
+    explanation: "Ihr gewöhnlicher Aufenthalt ist dort, wo Sie sich dauerhaft aufhalten und Ihren Lebensmittelpunkt haben.",
   },
 
   // Financial Information
@@ -102,6 +103,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 2000",
     validation: { min: 0 },
+    explanation: "Das Bruttoeinkommen ist Ihr Gehalt vor Abzug von Steuern und Sozialabgaben.",
   },
   netMonthlyIncome: {
     name: "netMonthlyIncome",
@@ -109,6 +111,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1500",
     validation: { min: 0 },
+    explanation: "Das Nettoeinkommen ist der Betrag, der nach Abzug aller Steuern und Sozialabgaben auf Ihrem Konto eingeht.",
   },
   assets: {
     name: "assets",
@@ -116,6 +119,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 5000",
     validation: { min: 0 },
+    explanation: "Zum Vermögen zählen Bargeld, Sparguthaben, Wertpapiere, Immobilien und andere Sachwerte.",
   },
   monthlyRent: {
     name: "monthlyRent",
@@ -132,6 +136,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 2",
     validation: { min: 1, step: 1 },
+    explanation: "Alle Personen, die dauerhaft in Ihrer Wohnung leben und gemeinsam wirtschaften (inkl. Sie selbst).",
   },
   numberOfChildren: {
     name: "numberOfChildren",

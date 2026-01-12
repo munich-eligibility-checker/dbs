@@ -1,6 +1,6 @@
 <template>
   <div class="yes-no-input">
-    <label v-if="label" class="m-label">{{ label }}</label>
+    <label v-if="label" class="m-label">{{ label }}<span v-if="explanation" class="explanation-tooltip" :data-tooltip="explanation">?</span></label>
     <div class="yes-no-options">
       <label class="yes-no-option">
         <input
@@ -33,6 +33,7 @@ defineProps<{
   modelValue?: boolean;
   label?: string;
   name: string;
+  explanation?: string;
 }>();
 
 defineEmits<{
@@ -112,6 +113,73 @@ defineEmits<{
   .yes-no-option {
     width: 100%;
   }
+}
+
+.explanation-tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mde-color-brand-mde-blue);
+  background: var(--mde-color-neutral-beau-blue-x-light);
+  border: 1px solid var(--mde-color-brand-mde-blue);
+  border-radius: 50%;
+  cursor: help;
+  vertical-align: middle;
+  position: relative;
+}
+
+.explanation-tooltip:hover {
+  background: var(--mde-color-brand-mde-blue);
+  color: white;
+}
+
+.explanation-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--mde-color-brand-mde-blue-dark, #1a365d);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.explanation-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--mde-color-brand-mde-blue-dark, #1a365d);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1001;
+}
+
+.explanation-tooltip:hover::after,
+.explanation-tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
 }
 </style>
 

@@ -51,6 +51,8 @@ export interface FieldMetadata {
   visibleWhen?: (formData: FormData) => boolean|undefined;
   /** Optional: Default value to use when field is hidden due to visibleWhen returning false */
   defaultWhenHidden?: string | number | boolean | number[];
+  /** Optional: Explanation text shown when hovering over the help icon */
+  explanation?: string;
 }
 
 /**

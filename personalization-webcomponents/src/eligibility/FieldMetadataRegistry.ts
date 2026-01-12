@@ -1,4 +1,7 @@
-import type { FormData, FormDataField } from "@/types/EligibilityCheckInterface";
+import type {
+  FormData,
+  FormDataField,
+} from "@/types/EligibilityCheckInterface";
 import type { FieldMetadata } from "@/types/FieldMetadata";
 
 /**
@@ -10,12 +13,14 @@ function calculateAge(dateOfBirth: string | undefined): number {
   const birthDate = new Date(dateOfBirth);
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--;
   }
   return age;
 }
-
 
 /**
  * Global registry mapping FormDataFields to their rendering metadata.
@@ -45,7 +50,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Geschlecht",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "male", label: "Männlich" },
       { value: "female", label: "Weiblich" },
       { value: "diverse", label: "Divers" },
@@ -57,7 +61,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Familienstand",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "single", label: "Ledig" },
       { value: "married", label: "Verheiratet" },
       { value: "divorced", label: "Geschieden" },
@@ -82,7 +85,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Aufenthaltsstatus",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "residence_permit", label: "Aufenthaltserlaubnis" },
       { value: "permanent_residence", label: "Niederlassungserlaubnis" },
       { value: "none", label: "Keine" },
@@ -188,7 +190,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Beschäftigungsstatus",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "employed", label: "Angestellt" },
       { value: "self_employed", label: "Selbstständig" },
       { value: "unemployed", label: "Arbeitslos" },
@@ -202,7 +203,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Bildungsstand",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "no_degree", label: "Kein Abschluss" },
       { value: "lower_secondary", label: "Hauptschule" },
       { value: "secondary", label: "Realschule" },
@@ -229,14 +229,17 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 50",
     validation: { min: 0, max: 100 },
-    visibleWhen: (data: FormData) => data.hasDisability === undefined ? undefined : data.hasDisability,
+    visibleWhen: (data: FormData) =>
+      data.hasDisability === undefined ? undefined : data.hasDisability,
   },
   isPregnant: {
     name: "isPregnant",
     label: "Schwanger",
     type: "yesno",
     visibleWhen: (data: FormData) =>
-      data.gender === undefined ? undefined : (data.gender === "female" || data.gender === "diverse"),
+      data.gender === undefined
+        ? undefined
+        : data.gender === "female" || data.gender === "diverse",
   },
   hasCareNeeds: {
     name: "hasCareNeeds",
@@ -263,13 +266,14 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Arbeitsfähigkeit",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "full", label: "Voll arbeitsfähig" },
       { value: "limited", label: "Eingeschränkt arbeitsfähig" },
       { value: "none", label: "Nicht arbeitsfähig" },
     ],
     visibleWhen: (data: FormData) =>
-      (data.receivesPension === undefined || data.dateOfBirth === undefined) ? undefined : (data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67),
+      data.receivesPension === undefined || data.dateOfBirth === undefined
+        ? undefined
+        : data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -293,7 +297,6 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Krankenversicherung",
     type: "select",
     options: [
-      { value: undefined, label: "Bitte wählen" },
       { value: "public", label: "Gesetzlich" },
       { value: "private", label: "Privat" },
       { value: "none", label: "Keine" },
@@ -322,7 +325,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesStudentAid",
     label: "Beziehe BAföG",
     type: "yesno",
-    visibleWhen: (data: FormData) => data.isStudent === undefined ? undefined : data.isStudent === true,
+    visibleWhen: (data: FormData) =>
+      data.isStudent === undefined ? undefined : data.isStudent === true,
   },
 };
 

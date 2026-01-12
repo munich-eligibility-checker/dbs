@@ -487,7 +487,7 @@ function checkEligibility() {
   visibleFields.value = result.visibleFields;
   console.log("PREFILL", prefillData);
   console.log("MISSING SIZE", result.allMissingFieldsSize);
-  allMissingFieldsSize.value = result.allMissingFieldsSize - Object.entries(prefillData).length;
+  allMissingFieldsSize.value = result.allMissingFieldsSize;
   console.log("form", visibleFields.value);
 
   setTimeout(() => {

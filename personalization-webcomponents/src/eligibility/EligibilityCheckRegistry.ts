@@ -1,10 +1,5 @@
 import type { NextSectionStrategy } from "@/eligibility/NextSectionStrategy";
-import type {
-  EligibilityCheckInterface,
-  EligibilityResult,
-  FormData,
-  FormDataField,
-} from "@/types/EligibilityCheckInterface";
+import type { EligibilityCheckInterface, EligibilityResult, FormData, FormDataField } from "@/types/EligibilityCheckInterface";
 import type { VisibleSection } from "@/types/FieldMetadata";
 
 import { ArbeitslosengeldCheck } from "@/eligibility/ArbeitslosengeldCheck";
@@ -12,20 +7,14 @@ import { BafoegCheck } from "@/eligibility/BafoegCheck";
 import { BerufsausbildungsbeihilfeCheck } from "@/eligibility/BerufsausbildungsbeihilfeCheck";
 import { BildungUndTeilhabeCheck } from "@/eligibility/BildungUndTeilhabeCheck";
 import { BuergergeldCheck } from "@/eligibility/BuergergeldCheck";
-import {
-  applyDefaultsForHiddenFields,
-  getFieldMetadata,
-} from "@/eligibility/FieldMetadataRegistry";
+import { applyDefaultsForHiddenFields, getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
 import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck";
 import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck";
 import { KindergeldCheck } from "@/eligibility/KindergeldCheck";
 import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck";
-import {
-  OrderedNextSectionStrategy,
-  RapidQuestionStrategy,
-  YesNoFirstStrategy,
-} from "@/eligibility/NextSectionStrategy";
+import { OrderedNextSectionStrategy, RapidQuestionStrategy, YesNoFirstStrategy } from "@/eligibility/NextSectionStrategy";
 import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
+
 
 export type PrefilledFields = {
   [K in FormDataField]?: FormData[K];
@@ -141,8 +130,8 @@ export class EligibilityCheckRegistry {
     // Apply default values for hidden fields before processing
     const processedFormData = applyDefaultsForHiddenFields(formData);
 
-    const allResults = [];
-    const allMissingFields = new Set<FormDataField>();
+    let allResults = [];
+    let allMissingFields = new Set<FormDataField>();
 
     let prefilledFields: PrefilledFields = {};
 
@@ -234,9 +223,23 @@ export class EligibilityCheckRegistry {
         Object.values(newPrefilledFields).filter((value) => value !== undefined)
           .length === newFields.length
       ) {
+        allMissingFields = new Set<FormDataField>();
+        allResults = [];
+        for (const check of this.checks) {
+          const result = check.evaluate({ ...processedFormData, ...prefilledFields });
+
+          if (result.missingFields) {
+            result.missingFields.forEach((field) => {
+              allMissingFields.add(field);
+            });
+          }
+
+          allResults.push(result);
+        }
         continue;
       }
 
+      console.log("allMissingFields.size", allMissingFields.size);
       return {
         eligible,
         ineligible,

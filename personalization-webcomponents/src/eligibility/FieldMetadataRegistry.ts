@@ -1,5 +1,21 @@
-import type { FormDataField } from "@/types/EligibilityCheckInterface";
+import type { FormData, FormDataField } from "@/types/EligibilityCheckInterface";
 import type { FieldMetadata } from "@/types/FieldMetadata";
+
+/**
+ * Helper function to calculate age from date of birth
+ */
+function calculateAge(dateOfBirth: string | undefined): number {
+  if (!dateOfBirth) return 0;
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 
 /**
  * Global registry mapping FormDataFields to their rendering metadata.
@@ -70,6 +86,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "permanent_residence", label: "Niederlassungserlaubnis" },
       { value: "none", label: "Keine" },
     ],
+    visibleWhen: (data: FormData) => data.nationality !== "German",
   },
   residenceInGermany: {
     name: "residenceInGermany",
@@ -91,6 +108,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 1500",
     validation: { min: 0 },
+    visibleWhen: (data: FormData) => (data.grossMonthlyIncome ?? 0) > 0,
   },
   assets: {
     name: "assets",
@@ -127,6 +145,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     label: "Alter der Kinder (kommagetrennt)",
     type: "numberArray",
     placeholder: "z.B. 5, 8, 12",
+    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
   },
   livesWithParents: {
     name: "livesWithParents",
@@ -137,6 +156,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "isSingleParent",
     label: "Sind Sie Alleinerziehend?",
     type: "yesno",
+    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
   },
 
   // Education & Employment
@@ -186,11 +206,13 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "number",
     placeholder: "z.B. 50",
     validation: { min: 0, max: 100 },
+    visibleWhen: (data: FormData) => data.hasDisability === true,
   },
   isPregnant: {
     name: "isPregnant",
     label: "Schwanger",
     type: "yesno",
+    visibleWhen: (data: FormData) => data.gender === "female" || data.gender === "diverse",
   },
   hasCareNeeds: {
     name: "hasCareNeeds",
@@ -222,6 +244,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "limited", label: "Eingeschränkt arbeitsfähig" },
       { value: "none", label: "Nicht arbeitsfähig" },
     ],
+    visibleWhen: (data: FormData) => data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -260,6 +283,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesChildBenefit",
     label: "Beziehe Kindergeld",
     type: "yesno",
+    visibleWhen: (data: FormData) => (data.numberOfChildren ?? 0) > 0,
   },
   receivesHousingBenefit: {
     name: "receivesHousingBenefit",
@@ -270,6 +294,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesStudentAid",
     label: "Beziehe BAföG",
     type: "yesno",
+    visibleWhen: (data: FormData) => data.isStudent === true,
   },
 };
 

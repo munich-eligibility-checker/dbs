@@ -260,6 +260,7 @@ import { computed, onMounted, ref, watch } from "vue";
 // Import dynamic form component
 import DynamicFormSection from "@/components/forms/dynamic-form-section.vue";
 import { EligibilityCheckRegistry } from "@/eligibility/EligibilityCheckRegistry";
+import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
 
 const SOLID_DATA_FILE = "private/personalization/eligibility-data.json";
 
@@ -409,7 +410,12 @@ watch(
 );
 
 const shouldShowField = (fieldName: FormDataField): boolean => {
-  return visibleFields.value.includes(fieldName);
+  if (!visibleFields.value.includes(fieldName)) return false;
+  const metadata = getFieldMetadata(fieldName);
+  if (metadata.visibleWhen && !metadata.visibleWhen(formFields.value)) {
+    return false;
+  }
+  return true;
 };
 
 function updateFormData(newFormData: FormData) {

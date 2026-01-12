@@ -1,4 +1,4 @@
-import type { FormDataField } from "./EligibilityCheckInterface";
+import type { FormData, FormDataField } from "./EligibilityCheckInterface";
 
 /**
  * Supported form field types for dynamic rendering
@@ -46,6 +46,8 @@ export interface FieldMetadata {
   options?: FieldOption[];
   /** Validation rules */
   validation?: FieldValidation;
+  /** Optional: Condition when this field should be visible based on other form data */
+  visibleWhen?: (formData: FormData) => boolean;
 }
 
 /**

@@ -32,7 +32,7 @@
         :id="fieldName"
         :value="modelValue"
         type="number"
-        step="0.01"
+        :step="validation?.step ?? 'any'"
         :min="validation?.min"
         :max="validation?.max"
         :placeholder="placeholder"
@@ -164,7 +164,29 @@ function onInput(event: Event) {
 
 function onNumberInput(event: Event) {
   const target = event.target as HTMLInputElement;
-  const value = target.value !== '' ? parseFloat(target.value) : undefined;
+  if (target.value === '') {
+    emit("update:modelValue", undefined);
+    return;
+  }
+  let value = parseFloat(target.value);
+  
+  // If step is 1 (integer field), round to nearest integer
+  if (props.validation?.step === 1) {
+    value = Math.round(value);
+  }
+  
+  // Enforce min value
+  if (props.validation?.min !== undefined && value < props.validation.min) {
+    value = props.validation.min;
+  }
+  
+  // Enforce max value
+  if (props.validation?.max !== undefined && value > props.validation.max) {
+    value = props.validation.max;
+  }
+  
+  // Update the input field to show the corrected value
+  target.value = String(value);
   emit("update:modelValue", value);
 }
 

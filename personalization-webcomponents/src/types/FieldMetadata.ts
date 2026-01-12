@@ -28,6 +28,7 @@ export interface FieldValidation {
   min?: number;
   max?: number;
   pattern?: string;
+  step?: number;
 }
 
 /**

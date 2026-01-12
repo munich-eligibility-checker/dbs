@@ -34,6 +34,7 @@
                 :key="section.id"
                 :section="section"
                 :form-data="formFields"
+                :prefilled-fields="prefilledFields"
                 :should-show-field="shouldShowField"
                 @update:form-data="updateFormData"
               />

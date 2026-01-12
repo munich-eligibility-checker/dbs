@@ -18,6 +18,7 @@
         class="m-textfield"
         @input="onInput($event)"
       />
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Number input -->
@@ -38,6 +39,7 @@
         class="m-textfield"
         @input="onNumberInput($event)"
       />
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Date input -->
@@ -54,6 +56,7 @@
         class="m-textfield"
         @input="onInput($event)"
       />
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Select dropdown -->
@@ -77,6 +80,7 @@
           {{ option.label }}
         </option>
       </select>
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Checkbox -->
@@ -93,6 +97,7 @@
           <span>{{ label }}</span>
         </label>
       </div>
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Yes/No input -->
@@ -103,6 +108,7 @@
         :name="fieldName"
         @update:model-value="$emit('update:modelValue', $event)"
       />
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
 
     <!-- Number array (comma-separated) -->
@@ -120,6 +126,7 @@
         class="m-textfield"
         @blur="onNumberArrayBlur"
       />
+      <prefilled-indicator v-if="isPrefilled" />
     </template>
   </div>
 </template>
@@ -129,6 +136,7 @@ import { ref, watch } from "vue";
 import type { FieldOption, FieldValidation } from "@/types/FieldMetadata";
 
 import YesNoInput from "@/components/YesNoInput.vue";
+import PrefilledIndicator from "./PrefilledIndicator.vue";
 
 const props = defineProps<{
   fieldName: string;
@@ -139,6 +147,7 @@ const props = defineProps<{
   options?: FieldOption[];
   validation?: FieldValidation;
   visible: boolean;
+  isPrefilled?: boolean;
 }>();
 
 const emit = defineEmits<{

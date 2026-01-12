@@ -13,6 +13,7 @@
       :options="getFieldMetadata(fieldName).options"
       :validation="getFieldMetadata(fieldName).validation"
       :visible="shouldShowField(fieldName)"
+      :is-prefilled="prefilledFields[fieldName] !== undefined"
       @update:model-value="updateField(fieldName, $event)"
     />
   </fieldset>
@@ -24,6 +25,7 @@ import type {
   FormDataField,
 } from "@/types/EligibilityCheckInterface";
 import type { VisibleSection } from "@/types/FieldMetadata";
+import type { PrefilledFields } from "@/eligibility/EligibilityCheckRegistry";
 
 import DynamicFormField from "@/components/forms/dynamic-form-field.vue";
 import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
@@ -31,6 +33,7 @@ import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
 const props = defineProps<{
   section: VisibleSection;
   formData: FormData;
+  prefilledFields: PrefilledFields;
   shouldShowField: (field: FormDataField) => boolean;
 }>();
 

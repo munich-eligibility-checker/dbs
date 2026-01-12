@@ -168,7 +168,7 @@
 
               <div
                 v-for="result in showAllResults
-                  ? allEligibilityResults
+                  ? [...allEligibilityResults].sort((a, b) => (b.eligible ? 1 : 0) - (a.eligible ? 1 : 0))
                   : eligibilityResults"
                 :key="result.subsidyName"
                 :class="[

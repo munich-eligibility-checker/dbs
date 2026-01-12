@@ -154,7 +154,7 @@ function onInput(event: Event) {
 
 function onNumberInput(event: Event) {
   const target = event.target as HTMLInputElement;
-  const value = target.value ? parseFloat(target.value) : undefined;
+  const value = target.value !== '' ? parseFloat(target.value) : undefined;
   emit("update:modelValue", value);
 }
 

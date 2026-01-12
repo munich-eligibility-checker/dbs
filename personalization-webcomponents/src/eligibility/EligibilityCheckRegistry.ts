@@ -171,7 +171,7 @@ export class EligibilityCheckRegistry {
       (visibleField) => {
         const metadata = getFieldMetadata(visibleField);
         // If field is hidden due to visibleWhen condition, consider it as filled
-        if (metadata.visibleWhen && !metadata.visibleWhen(processedFormData)) {
+        if (metadata.visibleWhen && metadata.visibleWhen(processedFormData) === false) {
           return true;
         }
         return processedFormData[visibleField] !== undefined;

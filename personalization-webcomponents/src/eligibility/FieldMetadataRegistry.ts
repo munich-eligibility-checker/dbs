@@ -165,9 +165,9 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "numberArray",
     placeholder: "z.B. 5, 8, 12",
     visibleWhen: (data: FormData) =>
-      data.numberOfChildren === undefined
+      data.householdSize === undefined
         ? undefined
-        : data.numberOfChildren > 0,
+        : data.householdSize > 1,
   },
   livesWithParents: {
     name: "livesWithParents",

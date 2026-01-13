@@ -29,7 +29,7 @@ export interface PrefilledEligibilityEvaluationResult {
   visibleSections: VisibleSection[];
   prefilledFields: PrefilledFields;
   /** The number of all unique fields that checks report as missing */
-  allMissingFieldsSize: number;
+  allMissingFields: FormDataField[];
 }
 
 /**
@@ -239,6 +239,22 @@ export class EligibilityCheckRegistry {
         continue;
       }
 
+      allMissingFields = new Set<FormDataField>();
+      allResults = [];
+      for (const check of this.checks) {
+        const result = check.evaluate({
+          ...processedFormData,
+          ...prefilledFields,
+        });
+
+        if (result.missingFields) {
+          result.missingFields.forEach((field) => {
+            allMissingFields.add(field);
+          });
+        }
+
+        allResults.push(result);
+      }
       console.log("allMissingFields.size", allMissingFields.size);
       return {
         eligible,
@@ -247,8 +263,8 @@ export class EligibilityCheckRegistry {
         visibleSections: this.getVisibleSectionsWithMetadata(),
         visibleFields: Array.from(this.visibleFields),
         prefilledFields,
-        allMissingFieldsSize:
-          allMissingFields.size - Object.entries(newPrefilledFields).length,
+        allMissingFields:
+          Array.from(allMissingFields),
       };
     }
 
@@ -259,7 +275,7 @@ export class EligibilityCheckRegistry {
       visibleSections: this.getVisibleSectionsWithMetadata(),
       visibleFields: Array.from(this.visibleFields),
       prefilledFields,
-      allMissingFieldsSize: allMissingFields.size,
+      allMissingFields: Array.from(allMissingFields),
     };
   }
 }

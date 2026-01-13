@@ -31,8 +31,8 @@
               Alle Angaben vollständig!
             </template>
             <template v-else>
-              {{ filledFieldsCount }} von
-              {{ filledFieldsCount + allMissingFieldsSize }} Feldern ausgefüllt
+              {{ filledFieldsCount }} von {{ allMissingFieldsSize }} Feldern
+              ausgefüllt
             </template>
           </div>
         </div>
@@ -56,10 +56,21 @@
           <!-- Right Column: Results -->
           <div class="right-column">
             <!-- Solid Pod Integration Hub -->
-            <div class="eligibility-results solid-pod-section" style="margin-bottom: 24px;">
-              <div class="eligibility-header" style="margin-bottom: 8px;">
+            <div
+              class="eligibility-results solid-pod-section"
+              style="margin-bottom: 24px"
+            >
+              <div
+                class="eligibility-header"
+                style="margin-bottom: 8px"
+              >
                 <div>
-                  <h2 class="eligibility-title" style="margin-bottom: 0;">Solid Pod</h2>
+                  <h2
+                    class="eligibility-title"
+                    style="margin-bottom: 0"
+                  >
+                    Solid Pod
+                  </h2>
                 </div>
               </div>
 
@@ -85,10 +96,15 @@
                 >
                   Anmelden
                 </muc-button>
-                <p class="eligibility-subtitle" style="margin-top: 16px;">
-                  <strong>Was ist ein Solid Pod?</strong> Ihr Pod ist Ihr persönlicher Datentresor. 
-                  Anstatt dass Ihre Daten den jeweiligen Apps gehören, speichern Sie diese in Ihrem eigenen Pod. 
-                  Sie entscheiden genau, was diese Website sehen oder tun darf – und Sie können den Zugriff jederzeit widerrufen.
+                <p
+                  class="eligibility-subtitle"
+                  style="margin-top: 16px"
+                >
+                  <strong>Was ist ein Solid Pod?</strong> Ihr Pod ist Ihr
+                  persönlicher Datentresor. Anstatt dass Ihre Daten den
+                  jeweiligen Apps gehören, speichern Sie diese in Ihrem eigenen
+                  Pod. Sie entscheiden genau, was diese Website sehen oder tun
+                  darf – und Sie können den Zugriff jederzeit widerrufen.
                 </p>
               </div>
 
@@ -413,11 +429,10 @@ const filledFieldsCount = computed(() => {
 });
 
 const progressPercent = computed(() => {
-  const filled = filledFieldsCount.value;
-  const missing = allMissingFieldsSize.value;
-  const total = filled + missing;
-  if (total === 0) return 0;
-  return Math.round((filled / total) * 100);
+  if (allMissingFieldsSize.value === 0) return 0;
+  return Math.round(
+    (filledFieldsCount.value / allMissingFieldsSize.value) * 100
+  );
 });
 
 const isFormComplete = computed(() => {
@@ -439,7 +454,9 @@ watch(
 const shouldShowField = (fieldName: FormDataField): boolean => {
   if (!visibleFields.value.includes(fieldName)) return false;
   const metadata = getFieldMetadata(fieldName);
-  return !(metadata.visibleWhen && metadata.visibleWhen(formFields.value) === false);
+  return !(
+    metadata.visibleWhen && metadata.visibleWhen(formFields.value) === false
+  );
 };
 
 function updateFormData(newFormData: FormData) {
@@ -486,8 +503,11 @@ function checkEligibility() {
   eligibilityResults.value = result.eligible;
   visibleFields.value = result.visibleFields;
   console.log("PREFILL", prefillData);
-  console.log("MISSING SIZE", result.allMissingFieldsSize);
-  allMissingFieldsSize.value = result.allMissingFieldsSize;
+  console.log("MISSING SIZE", result.allMissingFields.length);
+  allMissingFieldsSize.value = new Set([
+    ...result.allMissingFields,
+    ...result.visibleFields,
+  ]).size;
   console.log("form", visibleFields.value);
 
   setTimeout(() => {
@@ -632,13 +652,15 @@ input[type="date"].m-textfield {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
   z-index: 1000;
   pointer-events: none;
 }
 
 .explanation-tooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: calc(100% + 2px);
   left: 50%;
@@ -647,7 +669,9 @@ input[type="date"].m-textfield {
   border-top-color: var(--mde-color-brand-mde-blue-dark, #1a365d);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
   z-index: 1001;
 }
 
@@ -714,7 +738,9 @@ input[type="date"].m-textfield {
   height: 100%;
   background: var(--mde-color-brand-mde-blue);
   border-radius: 6px;
-  transition: width 0.4s ease-out, background-color 0.3s ease;
+  transition:
+    width 0.4s ease-out,
+    background-color 0.3s ease;
 }
 
 .progress-bar-fill.progress-complete {

@@ -537,7 +537,7 @@ function showMessage(
 .m-form-group {
   margin-bottom: 24px;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .m-label {
@@ -719,7 +719,6 @@ input[type="date"].m-textfield {
 .progress-bar-sticky {
   position: sticky;
   top: 0;
-  z-index: 100;
   background: white;
   padding: 16px 0;
   margin: 0 -24px;

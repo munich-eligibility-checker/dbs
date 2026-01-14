@@ -134,6 +134,15 @@ export function useSolidPod(options: UseSolidPodOptions = {}) {
       onMessage?.("Daten erfolgreich aus dem Solid Pod geladen!", "success");
       return loadedData;
     } catch (err) {
+      // If file doesn't exist yet (404), silently return undefined
+      // This is expected on first connection before any data is saved
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as any).response;
+        if (response?.status === 404) {
+          return undefined;
+        }
+      }
+      
       onMessage?.(
         createErrorMessage(SolidErrorMessages.LOAD_FAILED, err),
         "warning"

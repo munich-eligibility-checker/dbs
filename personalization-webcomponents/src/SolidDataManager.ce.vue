@@ -562,8 +562,8 @@ input[type="date"].m-textfield {
 
 .right-column {
   position: sticky;
-  top: 24px;
-  max-height: calc(100vh - 48px);
+  top: 100px;
+  max-height: calc(100vh - 124px);
   overflow-y: auto;
 }
 

@@ -13,7 +13,6 @@
   border-radius: 50%;
   cursor: help;
   vertical-align: middle;
-  position: relative;
 }
 
 .explanation-tooltip:hover {
@@ -43,7 +42,6 @@
   transition:
     opacity 0.2s ease,
     visibility 0.2s ease;
-  z-index: 1000;
   pointer-events: none;
 }
 
@@ -60,7 +58,6 @@
   transition:
     opacity 0.2s ease,
     visibility 0.2s ease;
-  z-index: 1001;
 }
 
 .explanation-tooltip:hover::after,

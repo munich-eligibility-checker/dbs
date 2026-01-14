@@ -172,6 +172,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     placeholder: "z.B. 5, 8, 12",
     visibleWhen: (data: FormData) =>
       data.numberOfChildren === undefined ? false : data.numberOfChildren > 0,
+    defaultWhenHidden: [],
   },
   livesWithParents: {
     name: "livesWithParents",
@@ -186,6 +187,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       data.numberOfChildren === undefined
         ? undefined
         : data.numberOfChildren > 0,
+    defaultWhenHidden: false,
   },
 
   // Education & Employment
@@ -235,6 +237,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     validation: { min: 0, max: 100 },
     visibleWhen: (data: FormData) =>
       data.hasDisability === undefined ? undefined : data.hasDisability,
+    defaultWhenHidden: 0,
   },
   isPregnant: {
     name: "isPregnant",
@@ -244,6 +247,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       data.gender === undefined
         ? undefined
         : data.gender === "female" || data.gender === "diverse",
+    defaultWhenHidden: false,
   },
   hasCareNeeds: {
     name: "hasCareNeeds",
@@ -279,6 +283,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
         ? undefined
         : data.receivesPension !== true &&
           calculateAge(data.dateOfBirth) < EligibilityConstants.PENSION_AGE,
+    defaultWhenHidden: "none",
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -320,6 +325,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       data.numberOfChildren === undefined
         ? undefined
         : data.numberOfChildren > 0,
+    defaultWhenHidden: false,
   },
   receivesHousingBenefit: {
     name: "receivesHousingBenefit",

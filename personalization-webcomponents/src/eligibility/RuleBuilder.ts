@@ -1,12 +1,9 @@
-import type { EligibilityCheckResult, EligibilityResult, FormData, FormDataField } from "@/types/EligibilityCheckInterface";
-
-
-
-
-
-// type WithRequired<T, K extends readonly (keyof T)[]> = T & {
-//   [P in K[number]]-?: NonNullable<T[P]>;
-// };
+import type {
+  EligibilityCheckResult,
+  EligibilityResult,
+  FormData,
+  FormDataField,
+} from "@/types/EligibilityCheckInterface";
 
 type CheckedOnly<T, K extends readonly (keyof T)[]> = {
   [P in K[number]]: NonNullable<T[P]>;

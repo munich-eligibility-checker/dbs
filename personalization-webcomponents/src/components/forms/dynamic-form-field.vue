@@ -23,7 +23,7 @@
         :placeholder="placeholder"
         :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
         @blur="onBlur"
-        @input="onInput($event)"
+        @input="onTextInput"
       />
       <prefilled-indicator v-if="isPrefilled" />
     </template>
@@ -51,9 +51,12 @@
         :min="validation?.min"
         :max="validation?.max"
         :placeholder="placeholder"
-        :class="['m-textfield', { 'field-required': isTouched && modelValue === undefined }]"
+        :class="[
+          'm-textfield',
+          { 'field-required': isTouched && modelValue === undefined },
+        ]"
         @blur="onBlur"
-        @input="onNumberInput($event)"
+        @input="onIntegerInput"
       />
       <input
         v-else
@@ -62,9 +65,12 @@
         type="text"
         inputmode="decimal"
         :placeholder="placeholder"
-        :class="['m-textfield', { 'field-required': isTouched && modelValue === undefined }]"
-        @input="onDecimalInput($event)"
-        @blur="onDecimalBlur($event)"
+        :class="[
+          'm-textfield',
+          { 'field-required': isTouched && modelValue === undefined },
+        ]"
+        @input="onDecimalInput"
+        @blur="onDecimalBlur"
       />
       <prefilled-indicator v-if="isPrefilled" />
     </template>
@@ -86,11 +92,10 @@
         :id="fieldName"
         :value="modelValue"
         type="date"
-        :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
+        class="m-textfield date-input"
+        :class="{ 'field-required': isTouched && !modelValue }"
         @blur="onBlur"
-        class="m-textfield"
-        style="width: 100%; max-width: 100%; box-sizing: border-box;"
-        @input="onInput($event)"
+        @input="onTextInput"
       />
       <prefilled-indicator v-if="isPrefilled" />
     </template>
@@ -111,10 +116,9 @@
       <select
         :id="fieldName"
         :value="modelValue"
-        :default-value="undefined"
         :class="['m-textfield', { 'field-required': isTouched && !modelValue }]"
         @blur="onBlur"
-        @change="onSelectChange($event)"
+        @change="onSelectChange"
       >
         <option
           v-for="option in options"
@@ -136,7 +140,7 @@
             :checked="modelValue === true"
             type="checkbox"
             class="m-checkbox"
-            @change="onCheckboxChange($event)"
+            @change="onCheckboxChange"
           />
           <span
             >{{ label
@@ -182,7 +186,15 @@
         v-model="numberArrayText"
         type="text"
         :placeholder="placeholder"
-        :class="['m-textfield', { 'field-required': isTouched && (!modelValue || (Array.isArray(modelValue) && modelValue.length === 0)) }]"
+        :class="[
+          'm-textfield',
+          {
+            'field-required':
+              isTouched &&
+              (!modelValue ||
+                (Array.isArray(modelValue) && modelValue.length === 0)),
+          },
+        ]"
         @blur="onNumberArrayBlur"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -191,7 +203,12 @@
 </template>
 
 <script setup lang="ts">
-import type { FieldOption, FieldValidation } from "@/types/FieldMetadata";
+import type {
+  FieldOption,
+  FieldType,
+  FieldValidation,
+  FormFieldValue,
+} from "@/types/FieldMetadata";
 
 import { ref, watch } from "vue";
 
@@ -201,8 +218,8 @@ import PrefilledIndicator from "./PrefilledIndicator.vue";
 const props = defineProps<{
   fieldName: string;
   label: string;
-  fieldType: string;
-  modelValue?: string | number | boolean | number[] | undefined;
+  fieldType: FieldType;
+  modelValue?: FormFieldValue;
   placeholder?: string;
   options?: FieldOption[];
   validation?: FieldValidation;
@@ -212,16 +229,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  "update:modelValue": [
-    value: string | number | boolean | number[] | undefined,
-  ];
+  "update:modelValue": [value: FormFieldValue];
 }>();
 
 // Track if the field has been focused/touched at least once
-const isTouched = ref<boolean>(false);
+const isTouched = ref(false);
 
 // Display value for decimal text inputs - stores the raw text while user is typing
-const displayValue = ref<string>("");
+const displayValue = ref("");
 
 // Sync displayValue with modelValue when it changes externally
 watch(
@@ -237,22 +252,20 @@ watch(
   { immediate: true }
 );
 
-function onBlur() {
+function onBlur(): void {
   isTouched.value = true;
 }
 
-function onInput(event: Event) {
+function onTextInput(event: Event): void {
   const target = event.target as HTMLInputElement;
-  const value = target.value;
-  emit("update:modelValue", value || undefined);
+  emit("update:modelValue", target.value || undefined);
 }
 
-// For decimal text inputs - update display and emit parsed value
-function onDecimalInput(event: Event) {
+
+function onDecimalInput(event: Event): void {
   const target = event.target as HTMLInputElement;
   displayValue.value = target.value;
 
-  // Also emit the parsed value so the form knows it's filled
   if (target.value === "") {
     emit("update:modelValue", undefined);
     return;
@@ -265,8 +278,7 @@ function onDecimalInput(event: Event) {
   }
 }
 
-// On blur, parse and emit the value
-function onDecimalBlur(event: Event) {
+function onDecimalBlur(event: Event): void {
   onBlur();
   const target = event.target as HTMLInputElement;
   if (target.value === "") {
@@ -277,38 +289,34 @@ function onDecimalBlur(event: Event) {
   const normalizedValue = target.value.replace(/\./g, "").replace(",", ".");
   let value = parseFloat(normalizedValue);
 
-  // If parsing failed, emit undefined
   if (isNaN(value)) {
     emit("update:modelValue", undefined);
     return;
   }
 
-  // Enforce min value
+  // Enforce min/max values
   if (props.validation?.min !== undefined && value < props.validation.min) {
     value = props.validation.min;
   }
-
-  // Enforce max value
   if (props.validation?.max !== undefined && value > props.validation.max) {
     value = props.validation.max;
   }
 
-  // Keep display with German comma format (no thousands separator)
+  // Keep display with German comma format
   displayValue.value = String(value).replace(".", ",");
   emit("update:modelValue", value);
 }
 
-function onNumberInput(event: Event) {
+function onIntegerInput(event: Event): void {
   const target = event.target as HTMLInputElement;
   if (target.value === "") {
     emit("update:modelValue", undefined);
     return;
   }
-  // Replace comma with dot for German decimal notation
+
   const normalizedValue = target.value.replace(",", ".");
   let value = parseFloat(normalizedValue);
 
-  // If parsing failed, emit undefined
   if (isNaN(value)) {
     emit("update:modelValue", undefined);
     return;
@@ -316,32 +324,29 @@ function onNumberInput(event: Event) {
 
   const originalValue = value;
 
-  // If step is 1 (integer field), round to nearest integer
+  // Round to integer if step is 1
   if (props.validation?.step === 1) {
     value = Math.round(value);
   }
 
-  // Enforce min value
+  // Enforce min/max values
   if (props.validation?.min !== undefined && value < props.validation.min) {
     value = props.validation.min;
   }
-
-  // Enforce max value
   if (props.validation?.max !== undefined && value > props.validation.max) {
     value = props.validation.max;
   }
 
-  // Only update the input field if value was corrected
+  // Update input field if value was corrected
   if (value !== originalValue) {
     target.value = String(value);
   }
   emit("update:modelValue", value);
 }
 
-function onSelectChange(event: Event) {
+function onSelectChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
-  const value = target.value;
-  emit("update:modelValue", value);
+  emit("update:modelValue", target.value);
 }
 
 function onCheckboxChange(event: Event) {
@@ -362,7 +367,6 @@ watch(
   (newValue) => {
     if (props.fieldType === "numberArray") {
       const formatted = formatNumberArray(newValue as number[] | undefined);
-      // Only update if the parsed values are different (avoid overwriting while typing)
       const currentParsed = parseNumberArray(numberArrayText.value);
       const newParsed = newValue as number[] | undefined;
       if (JSON.stringify(currentParsed) !== JSON.stringify(newParsed)) {
@@ -392,7 +396,6 @@ function onNumberArrayBlur() {
   onBlur();
   const parsed = parseNumberArray(numberArrayText.value);
   emit("update:modelValue", parsed);
-  // Format the text nicely after blur
   numberArrayText.value = formatNumberArray(parsed);
 }
 </script>
@@ -401,5 +404,11 @@ function onNumberArrayBlur() {
 .field-required {
   border: 2px solid rgb(187, 67, 67) !important;
   border-radius: 3px;
+}
+
+.date-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 </style>

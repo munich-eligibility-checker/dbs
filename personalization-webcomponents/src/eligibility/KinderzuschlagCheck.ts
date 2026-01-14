@@ -6,9 +6,7 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class KinderzuschlagCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "Kinderzuschlag")
       .failIfField(
         "numberOfChildren",
@@ -19,7 +17,7 @@ export class KinderzuschlagCheck extends AbstractEligibilityCheck {
         "childrenAges",
         ({ childrenAges }) => {
           if (!childrenAges || childrenAges.length === 0) return true;
-          return !childrenAges.some(age => age < 25);
+          return !childrenAges.some((age) => age < 25);
         },
         "Kinderzuschlag wird nur für Kinder unter 25 Jahren gewährt."
       )
@@ -30,8 +28,8 @@ export class KinderzuschlagCheck extends AbstractEligibilityCheck {
       )
       .failIfFields(
         ["nationality", "residenceStatus"] as const,
-        ({ nationality, residenceStatus }) => 
-          nationality !== 'German' && residenceStatus === 'none',
+        ({ nationality, residenceStatus }) =>
+          nationality !== "German" && residenceStatus === "none",
         "Sie benötigen die deutsche Staatsbürgerschaft oder eine gültige Aufenthaltserlaubnis/Niederlassungserlaubnis."
       )
       .failIfFields(
@@ -58,7 +56,7 @@ export class KinderzuschlagCheck extends AbstractEligibilityCheck {
         "Bezieher von Bürgergeld sind nicht für Kinderzuschlag berechtigt."
       )
       .orElseSuccess(({ numberOfChildren }) => ({
-        reason: `Sie haben ${numberOfChildren} ${numberOfChildren === 1 ? 'Kind' : 'Kinder'} und beziehen Kindergeld. Sie könnten für Kinderzuschlag berechtigt sein.`,
+        reason: `Sie haben ${numberOfChildren} ${numberOfChildren === 1 ? "Kind" : "Kinder"} und beziehen Kindergeld. Sie könnten für Kinderzuschlag berechtigt sein.`,
         url: "https://www.arbeitsagentur.de/familie-und-kinder/kinderzuschlag",
       }));
   }

@@ -6,9 +6,7 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class ArbeitslosengeldCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "Arbeitslosengeld")
       .failIfField(
         "pensionEligible",
@@ -17,7 +15,7 @@ export class ArbeitslosengeldCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "residenceStatus",
-        ({ residenceStatus }) => residenceStatus === 'none',
+        ({ residenceStatus }) => residenceStatus === "none",
         "Sie benötigen die deutsche Staatsbürgerschaft oder eine gültige Aufenthaltserlaubnis/Niederlassungserlaubnis."
       )
       .failIfField(
@@ -27,12 +25,12 @@ export class ArbeitslosengeldCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "workAbility",
-        ({ workAbility }) => workAbility === 'none',
+        ({ workAbility }) => workAbility === "none",
         "Sie müssen in der Lage sein, mindestens 15 Stunden pro Woche zu arbeiten."
       )
       .failIfField(
         "employmentStatus",
-        ({ employmentStatus }) => employmentStatus !== 'unemployed',
+        ({ employmentStatus }) => employmentStatus !== "unemployed",
         "Arbeitslosengeld ist für arbeitslose Personen vorgesehen."
       )
       .failIfField(
@@ -46,7 +44,8 @@ export class ArbeitslosengeldCheck extends AbstractEligibilityCheck {
         "Rentenbezieher sind nicht für Arbeitslosengeld berechtigt."
       )
       .orElseSuccess(() => ({
-        reason: "Sie erfüllen die Grundvoraussetzungen für Arbeitslosengeld. Das Arbeitslosengeld sichert Sie sozial ab und ersetzt einen Teil Ihres fehlenden Einkommens.",
+        reason:
+          "Sie erfüllen die Grundvoraussetzungen für Arbeitslosengeld. Das Arbeitslosengeld sichert Sie sozial ab und ersetzt einen Teil Ihres fehlenden Einkommens.",
         url: "https://www.arbeitsagentur.de/arbeitslos-arbeit-finden/arbeitslosengeld",
       }));
   }

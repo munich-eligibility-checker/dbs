@@ -3,13 +3,11 @@ import type {
   FormData,
 } from "@/types/EligibilityCheckInterface";
 
-import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 import { calculateAge } from "@/eligibility/util.ts";
+import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class BafoegCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "BAföG")
       .failIfField(
         "hasFinancialHardship",
@@ -26,7 +24,7 @@ export class BafoegCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "healthInsurance",
-        ({ healthInsurance }) => healthInsurance === 'none',
+        ({ healthInsurance }) => healthInsurance === "none",
         "Eine Krankenversicherung ist erforderlich."
       )
       .failIfField(
@@ -36,12 +34,12 @@ export class BafoegCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "workAbility",
-        ({ workAbility }) => workAbility === 'none',
+        ({ workAbility }) => workAbility === "none",
         "Eine gewisse Arbeitsfähigkeit ist erforderlich."
       )
       .failIfField(
         "employmentStatus",
-        ({ employmentStatus }) => employmentStatus !== 'student',
+        ({ employmentStatus }) => employmentStatus !== "student",
         "Sie müssen sich in einer Ausbildung befinden (Student/in)."
       )
       .failIfField(
@@ -50,7 +48,8 @@ export class BafoegCheck extends AbstractEligibilityCheck {
         "Rentenbezieher sind nicht berechtigt."
       )
       .orElseSuccess(() => ({
-        reason: "Sie erfüllen die Voraussetzungen für BAföG. Mit dem Bundesausbildungsförderungsgesetz (BAföG) werden junge Menschen finanziell bei der Schulausbildung und dem Studium unterstützt.",
+        reason:
+          "Sie erfüllen die Voraussetzungen für BAföG. Mit dem Bundesausbildungsförderungsgesetz (BAföG) werden junge Menschen finanziell bei der Schulausbildung und dem Studium unterstützt.",
         url: "https://www.bafög.de/",
       }));
   }

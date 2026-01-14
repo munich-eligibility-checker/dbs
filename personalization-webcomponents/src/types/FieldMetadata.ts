@@ -32,55 +32,78 @@ export interface FieldValidation {
 }
 
 /**
- * Metadata defining how a form field should be rendered
+ * Base metadata interface shared by all field types
  */
-export interface FieldMetadata {
+interface BaseFieldMetadata {
   /** The field name matching FormDataField */
   name: FormDataField;
   /** Display label in German */
   label: string;
-  /** Type of input to render */
-  type: FieldType;
-  /** Placeholder text for text inputs */
-  placeholder?: string;
-  /** Options for select/radio fields */
-  options?: FieldOption[];
-  /** Validation rules */
-  validation?: FieldValidation;
   /** Optional: Condition when this field should be visible based on other form data */
-  visibleWhen?: (formData: FormData) => boolean|undefined;
+  visibleWhen?: (formData: FormData) => boolean | undefined;
   /** Optional: Default value to use when field is hidden due to visibleWhen returning false */
   defaultWhenHidden?: string | number | boolean | number[];
   /** Optional: Explanation text shown when hovering over the help icon */
   explanation?: string;
 }
 
-/**
- * Section definition with ID, title, and fields
- */
+export interface TextFieldMetadata extends BaseFieldMetadata {
+  type: "text";
+  placeholder?: string;
+}
+
+export interface NumberFieldMetadata extends BaseFieldMetadata {
+  type: "number";
+  placeholder?: string;
+  validation?: FieldValidation;
+}
+
+export interface DateFieldMetadata extends BaseFieldMetadata {
+  type: "date";
+}
+
+export interface SelectFieldMetadata extends BaseFieldMetadata {
+  type: "select";
+  options: FieldOption[];
+}
+
+export interface CheckboxFieldMetadata extends BaseFieldMetadata {
+  type: "checkbox";
+}
+
+export interface YesNoFieldMetadata extends BaseFieldMetadata {
+  type: "yesno";
+}
+
+export interface NumberArrayFieldMetadata extends BaseFieldMetadata {
+  type: "numberArray";
+  placeholder?: string;
+}
+
+export type FieldMetadata =
+  | TextFieldMetadata
+  | NumberFieldMetadata
+  | DateFieldMetadata
+  | SelectFieldMetadata
+  | CheckboxFieldMetadata
+  | YesNoFieldMetadata
+  | NumberArrayFieldMetadata;
+
 export interface SectionDefinition {
-  /** Unique section identifier */
   id: string;
-  /** Display title in German */
   title: string;
-  /** List of field names in this section */
   fields: FormDataField[];
 }
 
-/**
- * Complete section structure defined by a strategy
- */
 export interface SectionStructure {
   /** Ordered list of section definitions */
   sections: SectionDefinition[];
 }
 
-/**
- * Section with metadata for frontend rendering
- * (includes title, not just ID)
- */
 export interface VisibleSection {
   id: string;
   title: string;
   fields: FormDataField[];
 }
+
+export type FormFieldValue = string | number | boolean | number[] | undefined;

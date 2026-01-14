@@ -4,6 +4,7 @@ import type {
 } from "@/types/EligibilityCheckInterface";
 
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
+import { WohngeldThresholds } from "./constants";
 
 export class WohnGeldCheck extends AbstractEligibilityCheck {
   evaluate(formData: FormData): EligibilityResult {
@@ -20,13 +21,14 @@ export class WohnGeldCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "monthlyRent",
-        ({ monthlyRent }) => monthlyRent <= 400,
+        ({ monthlyRent }) => monthlyRent <= WohngeldThresholds.MINIMUM_RENT_EUR,
         "Die Miete ist zu niedrig für Wohngeld."
       )
       .failIfFields(
         ["householdSize", "netMonthlyIncome"] as const,
         ({ householdSize, netMonthlyIncome }) =>
-          netMonthlyIncome >= 1600 * householdSize,
+          netMonthlyIncome >=
+          WohngeldThresholds.INCOME_MULTIPLIER_PER_PERSON_EUR * householdSize,
         "Das Einkommen liegt über der Grenze."
       )
       .orElseSuccess(() => ({

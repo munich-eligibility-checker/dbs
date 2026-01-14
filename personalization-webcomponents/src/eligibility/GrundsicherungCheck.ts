@@ -6,10 +6,11 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class GrundsicherungCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
-    return this.rules(formData, "Grundsicherung im Alter und bei Erwerbsminderung")
+  evaluate(formData: FormData): EligibilityResult {
+    return this.rules(
+      formData,
+      "Grundsicherung im Alter und bei Erwerbsminderung"
+    )
       .failIfField(
         "residenceInGermany",
         ({ residenceInGermany }) => !residenceInGermany,
@@ -23,8 +24,8 @@ export class GrundsicherungCheck extends AbstractEligibilityCheck {
       .failIfFields(
         ["workAbility", "employmentStatus"] as const,
         ({ workAbility, employmentStatus }) => {
-          const isFullyDisabled = workAbility === 'none';
-          const isRetired = employmentStatus === 'retired';
+          const isFullyDisabled = workAbility === "none";
+          const isRetired = employmentStatus === "retired";
           return !isFullyDisabled && !isRetired;
         },
         "Sie müssen entweder das Rentenalter erreicht haben oder dauerhaft voll erwerbsgemindert sein."
@@ -40,7 +41,7 @@ export class GrundsicherungCheck extends AbstractEligibilityCheck {
         "BAföG-Bezieher sind nicht berechtigt."
       )
       .orElseSuccess(({ employmentStatus }) => {
-        const isRetired = employmentStatus === 'retired';
+        const isRetired = employmentStatus === "retired";
         const reasonText = isRetired
           ? "Sie haben das Rentenalter erreicht und befinden sich in finanzieller Notlage."
           : "Sie sind dauerhaft voll erwerbsgemindert und befinden sich in finanzieller Notlage.";

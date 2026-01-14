@@ -6,9 +6,7 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class BerufsausbildungsbeihilfeCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "Berufsausbildungsbeihilfe (BAB)")
       .failIfField(
         "pensionEligible",
@@ -22,7 +20,7 @@ export class BerufsausbildungsbeihilfeCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "employmentStatus",
-        ({ employmentStatus }) => employmentStatus !== 'student',
+        ({ employmentStatus }) => employmentStatus !== "student",
         "BAB ist für Personen in einer Berufsausbildung vorgesehen."
       )
       .failIfField(
@@ -46,7 +44,8 @@ export class BerufsausbildungsbeihilfeCheck extends AbstractEligibilityCheck {
         "BAB wird in der Regel nur gewährt, wenn Sie nicht bei Ihren Eltern wohnen."
       )
       .orElseSuccess(() => ({
-        reason: "Sie erfüllen die Grundvoraussetzungen für BAB. Diese Leistung hilft jungen Menschen in ihrer ersten Berufsausbildung.",
+        reason:
+          "Sie erfüllen die Grundvoraussetzungen für BAB. Diese Leistung hilft jungen Menschen in ihrer ersten Berufsausbildung.",
         url: "https://www.arbeitsagentur.de/bildung/ausbildung/berufsausbildungsbeihilfe-bab",
       }));
   }

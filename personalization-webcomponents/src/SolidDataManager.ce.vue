@@ -8,31 +8,33 @@
     <div class="m-component m-component-form">
       <div class="container">
         <muc-banner
-          v-if="message"
-          :type="messageType"
+          v-if="notification.message.value"
+          :type="notification.messageType.value"
           class="message-banner"
         >
-          {{ message }}
+          {{ notification.message.value }}
         </muc-banner>
         <div class="progress-bar-sticky">
           <div class="progress-bar-track">
             <div
               class="progress-bar-fill"
-              :class="{ 'progress-complete': isFormComplete }"
-              :style="{ width: progressPercent + '%' }"
+              :class="{ 'progress-complete': eligibility.isFormComplete.value }"
+              :style="{ width: eligibility.progressPercent.value + '%' }"
             />
           </div>
           <div
             class="progress-info"
-            :class="{ 'progress-info-complete': isFormComplete }"
+            :class="{
+              'progress-info-complete': eligibility.isFormComplete.value,
+            }"
           >
-            <template v-if="isFormComplete">
+            <template v-if="eligibility.isFormComplete.value">
               <span class="completion-icon">✓</span>
               Alle Angaben vollständig!
             </template>
             <template v-else>
-              {{ filledFieldsCount }} von {{ allMissingFieldsSize }} Feldern
-              ausgefüllt
+              {{ eligibility.filledFieldsCount.value }} von
+              {{ eligibility.allMissingFieldsSize.value }} Fragen beantwortet
             </template>
           </div>
         </div>
@@ -42,13 +44,13 @@
           <div class="left-column">
             <form class="form-content">
               <dynamic-form-section
-                v-for="section in visibleSections"
+                v-for="section in eligibility.visibleSections.value"
                 :key="section.id"
                 :section="section"
-                :form-data="formFields"
-                :prefilled-fields="prefilledFields"
-                :should-show-field="shouldShowField"
-                @update:form-data="updateFormData"
+                :form-data="eligibility.formFields.value"
+                :prefilled-fields="eligibility.prefilledFields.value"
+                :should-show-field="eligibility.shouldShowField"
+                @update:form-data="eligibility.updateFormData"
               />
             </form>
           </div>
@@ -57,49 +59,33 @@
           <div class="right-column">
             <!-- Solid Pod Integration Hub -->
             <div
-              class="eligibility-results solid-pod-section"
-              style="margin-bottom: 24px"
+              class="eligibility-results solid-pod-section solid-pod-section-spacing"
             >
-              <div
-                class="eligibility-header"
-                style="margin-bottom: 8px"
-              >
+              <div class="eligibility-header solid-pod-header">
                 <div>
-                  <h2
-                    class="eligibility-title"
-                    style="margin-bottom: 0"
-                  >
-                    Solid Pod
-                  </h2>
+                  <h2 class="eligibility-title solid-pod-title">Solid Pod</h2>
                 </div>
               </div>
 
-              <div v-if="!isSolidConnected">
-                <div
-                  class="m-form-group"
-                  style="margin-bottom: 16px"
-                >
+              <div v-if="!solidPod.isConnected.value">
+                <div class="m-form-group solid-pod-form-group">
                   <label class="m-label">Provider URL</label>
                   <input
-                    v-model="solidIssuer"
+                    v-model="solidPod.solidIssuer.value"
                     type="text"
-                    class="m-textfield"
+                    class="m-textfield full-width"
                     placeholder="https://solidcommunity.net"
-                    style="width: 100%"
                   />
                 </div>
                 <muc-button
-                  @click="connectToSolid"
-                  :disabled="solidLoading"
+                  :disabled="solidPod.loading.value"
                   icon="login"
-                  style="width: 100%"
+                  class="full-width"
+                  @click="handleConnect"
                 >
                   Anmelden
                 </muc-button>
-                <p
-                  class="eligibility-subtitle"
-                  style="margin-top: 16px"
-                >
+                <p class="eligibility-subtitle solid-pod-description">
                   <strong>Was ist ein Solid Pod?</strong> Ihr Pod ist Ihr
                   persönlicher Datentresor. Anstatt dass Ihre Daten den
                   jeweiligen Apps gehören, speichern Sie diese in Ihrem eigenen
@@ -110,44 +96,32 @@
 
               <div
                 v-else
-                style="display: flex; flex-direction: column; gap: 12px"
+                class="solid-connected-container"
               >
-                <div
-                  style="
-                    font-size: 0.85em;
-                    color: var(--mde-color-neutral-grey-dark);
-                    background: rgba(255, 255, 255, 0.5);
-                    padding: 8px;
-                    border-radius: 4px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    gap: 8px;
-                  "
-                >
-                  <div style="word-break: break-all">
-                    <span style="font-weight: 600">Verbunden als:</span><br />
-                    {{ solidWebId }}
+                <div class="solid-connection-info">
+                  <div class="solid-webid">
+                    <span class="solid-webid-label">Verbunden als:</span><br />
+                    {{ solidPod.webId.value }}
                   </div>
                   <muc-button
                     variant="ghost"
-                    @click="disconnectSolid"
-                    :loading="solidLoading"
+                    :loading="solidPod.loading.value"
                     icon="logout"
                     size="small"
-                    style="flex-shrink: 0"
+                    class="solid-logout-button"
+                    @click="handleDisconnect"
                   >
                     Abmelden
                   </muc-button>
                 </div>
 
-                <div style="display: flex; gap: 8px">
+                <div class="solid-actions">
                   <muc-button
                     variant="primary"
-                    @click="saveToPod"
-                    :loading="solidLoading"
+                    :loading="solidPod.loading.value"
                     icon="upload"
-                    style="flex: 1"
+                    class="solid-save-button"
+                    @click="handleSave"
                   >
                     Speichern
                   </muc-button>
@@ -157,15 +131,17 @@
 
             <div
               v-if="
-                eligibilityResults.length > 0 ||
-                allEligibilityResults.length > 0
+                eligibility.eligibilityResults.value.length > 0 ||
+                eligibility.allEligibilityResults.value.length > 0
               "
               class="eligibility-results"
             >
               <div class="eligibility-header">
                 <div>
                   <h2 class="eligibility-title">
-                    Mögliche Leistungen ({{ eligibilityResults.length }})
+                    Mögliche Leistungen ({{
+                      eligibility.eligibilityResults.value.length
+                    }})
                   </h2>
                   <p class="eligibility-subtitle">
                     Basierend auf Ihren Angaben könnten folgende Leistungen für
@@ -175,8 +151,8 @@
                 <muc-button
                   type="button"
                   variant="ghost"
-                  @click="showAllResults = !showAllResults"
                   class="toggle-all-button"
+                  @click="showAllResults = !showAllResults"
                 >
                   {{
                     showAllResults
@@ -187,13 +163,7 @@
               </div>
 
               <div
-                v-for="result in showAllResults
-                  ? [...allEligibilityResults].sort((a, b) => {
-                      const getOrder = (r: typeof a) =>
-                        r.eligible === true ? 2 : r.eligible === false ? 1 : 0;
-                      return getOrder(b) - getOrder(a);
-                    })
-                  : eligibilityResults"
+                v-for="result in displayedResults"
                 :key="result.subsidyName"
                 :class="[
                   'eligibility-card',
@@ -250,7 +220,10 @@
               </div>
             </div>
             <div
-              v-else-if="formFields.firstName || formFields.lastName"
+              v-else-if="
+                eligibility.formFields.value.firstName ||
+                eligibility.formFields.value.lastName
+              "
               class="no-results-placeholder"
             >
               <muc-callout type="info">
@@ -271,260 +244,77 @@
 </template>
 
 <script setup lang="ts">
-import type { PrefilledFields } from "@/eligibility/EligibilityCheckRegistry";
-import type {
-  EligibilityResult,
-  FormData,
-  FormDataField,
-} from "@/types/EligibilityCheckInterface";
-import type { VisibleSection } from "@/types/FieldMetadata";
+import type { EligibilityResult } from "@/types/EligibilityCheckInterface";
 
-import { getFile, overwriteFile } from "@inrupt/solid-client";
-// Solid Imports
-import {
-  getDefaultSession,
-  handleIncomingRedirect,
-  login,
-  logout,
-  fetch as solidFetch,
-} from "@inrupt/solid-client-authn-browser";
 import { MucBanner, MucButton, MucCallout } from "@muenchen/muc-patternlab-vue";
 import customIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/custom-icons.svg?raw";
 import mucIconsSprite from "@muenchen/muc-patternlab-vue/assets/icons/muc-icons.svg?raw";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 
-// Import dynamic form component
 import DynamicFormSection from "@/components/forms/dynamic-form-section.vue";
-import { EligibilityCheckRegistry } from "@/eligibility/EligibilityCheckRegistry";
-import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
+import { useEligibilityForm } from "@/composables/useEligibilityForm";
+import { useNotification } from "@/composables/useNotification";
+import { useSolidPod } from "@/composables/useSolidPod";
 
-const SOLID_DATA_FILE = "private/personalization/eligibility-data.json";
+// Initialize composables
+const notification = useNotification();
+const solidPod = useSolidPod({
+  onMessage: notification.showMessage,
+});
+const eligibility = useEligibilityForm();
 
-// Solid State
-const solidIssuer = ref("https://solidcommunity.net");
-const solidSession = getDefaultSession();
-const isSolidConnected = ref(false);
-const solidWebId = ref<string | undefined>(undefined);
-const solidLoading = ref(false);
-const solidPodData = ref<FormData | undefined>(undefined);
-
-async function connectToSolid() {
-  solidLoading.value = true;
-  try {
-    // Ensure we strictly use the origin (provider URL)
-    let issuer = solidIssuer.value;
-    try {
-      const url = new URL(issuer);
-      issuer = url.origin;
-    } catch (e) {
-      // ignore invalid urls, let login handle it
-    }
-
-    await login({
-      oidcIssuer: issuer,
-      redirectUrl: window.location.href,
-      clientName: "Solid Data Manager",
-    });
-  } catch (err) {
-    showMessage("Fehler bei der Solid-Anmeldung: " + err, "emergency");
-  } finally {
-    solidLoading.value = false;
-  }
-}
-
-async function disconnectSolid() {
-  solidLoading.value = true;
-  try {
-    await logout();
-    isSolidConnected.value = false;
-    solidWebId.value = undefined;
-    showMessage("Erfolgreich abgemeldet", "info");
-  } catch (err) {
-    showMessage("Fehler beim Abmelden: " + err, "emergency");
-  } finally {
-    solidLoading.value = false;
-  }
-}
-
-function getPodRoot(webId: string): string {
-  // Simple heuristic: assume Pod root is the origin
-  // In a production app, we would query the profile for ws:storage
-  return new URL(webId).origin + "/";
-}
-
-async function saveToPod() {
-  if (!solidWebId.value) return;
-
-  solidLoading.value = true;
-  try {
-    const podRoot = getPodRoot(solidWebId.value);
-    const fileUrl = `${podRoot}${SOLID_DATA_FILE}`;
-
-    const blob = new Blob([JSON.stringify(formFields.value, null, 2)], {
-      type: "application/json",
-    });
-
-    await overwriteFile(fileUrl, blob, { fetch: solidFetch });
-
-    showMessage("Daten erfolgreich im Solid Pod gespeichert!", "success");
-  } catch (err) {
-    showMessage("Fehler beim Speichern im Pod: " + err, "emergency");
-  } finally {
-    solidLoading.value = false;
-  }
-}
-
-async function loadFromPod() {
-  if (!solidWebId.value) return;
-
-  solidLoading.value = true;
-  try {
-    const podRoot = getPodRoot(solidWebId.value);
-
-    // Ensure we strictly use the origin (provider URL)
-    const url = new URL(podRoot);
-    const baseUrl = url.origin;
-
-    // SOLID_DATA_FILE does not have a leading slash, so we must add one
-    const fileUrl = `${baseUrl}/${SOLID_DATA_FILE}`;
-
-    const file = await getFile(fileUrl, { fetch: solidFetch });
-    const text = await file.text();
-    const loadedData: FormData = JSON.parse(text);
-
-    solidPodData.value = loadedData;
-
-    showMessage("Daten erfolgreich aus dem Solid Pod geladen!", "success");
-  } catch (err) {
-    showMessage(
-      "Fehler beim Laden aus dem Pod (Existiert die Datei?): " + err,
-      "warning"
-    );
-  } finally {
-    solidLoading.value = false;
-  }
-}
-
-const formFields = ref<FormData>({});
-
-const message = ref("");
-const messageType = ref<"success" | "info" | "warning" | "emergency">(
-  "success"
-);
-const eligibilityResults = ref<EligibilityResult[]>([]);
-const allEligibilityResults = ref<EligibilityResult[]>([]);
-const visibleFields = ref<FormDataField[]>([]);
-const allMissingFieldsSize = ref<number>(0);
 const showAllResults = ref(false);
-const prefilledFields = ref<PrefilledFields>({});
-const eligibilityRegistry = new EligibilityCheckRegistry();
 
-const filledFieldsCount = computed(() => {
-  return visibleFields.value.filter(
-    (field) =>
-      formFields.value[field] !== undefined &&
-      formFields.value[field] !== null &&
-      formFields.value[field] !== ""
-  ).length;
+/**
+ * Computed property for sorted/filtered eligibility results
+ */
+const displayedResults = computed<EligibilityResult[]>(() => {
+  if (showAllResults.value) {
+    return [...eligibility.allEligibilityResults.value].sort((a, b) => {
+      const getOrder = (r: EligibilityResult) =>
+        r.eligible === true ? 2 : r.eligible === false ? 1 : 0;
+      return getOrder(b) - getOrder(a);
+    });
+  }
+  return eligibility.eligibilityResults.value;
 });
 
-const progressPercent = computed(() => {
-  if (allMissingFieldsSize.value === 0) return 0;
-  return Math.round(
-    (filledFieldsCount.value / allMissingFieldsSize.value) * 100
-  );
-});
+/**
+ * Handle Solid Pod connection
+ */
+async function handleConnect() {
+  await solidPod.connect();
+}
 
-const isFormComplete = computed(() => {
-  return progressPercent.value === 100 && filledFieldsCount.value > 0;
-});
+/**
+ * Handle Solid Pod disconnection
+ */
+async function handleDisconnect() {
+  await solidPod.disconnect();
+}
 
-const isCheckingEligibility = ref(false);
-
-const visibleSections = ref<VisibleSection[]>([]);
-
-watch(
-  formFields,
-  () => {
-    checkEligibility();
-  },
-  { deep: true }
-);
-
-const shouldShowField = (fieldName: FormDataField): boolean => {
-  if (!visibleFields.value.includes(fieldName)) return false;
-  const metadata = getFieldMetadata(fieldName);
-  return !(
-    metadata.visibleWhen && metadata.visibleWhen(formFields.value) === false
-  );
-};
-
-function updateFormData(newFormData: FormData) {
-  formFields.value = newFormData;
+/**
+ * Handle saving form data to Solid Pod
+ */
+async function handleSave() {
+  await solidPod.saveData(eligibility.formFields.value);
 }
 
 onMounted(async () => {
-  // Handle Solid Redirect
-  try {
-    await handleIncomingRedirect({
-      restorePreviousSession: true,
-    });
-    isSolidConnected.value = solidSession.info.isLoggedIn;
-    solidWebId.value = solidSession.info.webId;
-    await loadFromPod();
-    checkEligibility();
-  } catch (err) {
-    console.error("Solid Redirect handling error:", err);
+  // Handle Solid redirect callback
+  await solidPod.handleRedirect();
+
+  // Load data from pod if connected
+  if (solidPod.isConnected.value) {
+    await solidPod.loadData();
   }
+
+  // Initial eligibility check with pod data as prefill source
+  eligibility.checkEligibility(solidPod.podData.value);
+
+  // Set up automatic eligibility checking when form changes
+  eligibility.setupAutoCheck(() => solidPod.podData.value);
 });
-
-function checkEligibility() {
-  // Use the registry to evaluate all checks
-  if (isCheckingEligibility.value) {
-    return;
-  }
-  isCheckingEligibility.value = true;
-
-  console.log("solid", solidPodData.value);
-  const result = eligibilityRegistry.refreshEligibilityForm(
-    formFields.value,
-    solidPodData.value
-  );
-
-  const prefillData = result.prefilledFields;
-  console.log("result", result);
-
-  formFields.value = { ...formFields.value, ...prefillData };
-  console.log("form", formFields.value);
-
-  visibleSections.value = result.visibleSections;
-  prefilledFields.value = result.prefilledFields;
-  allEligibilityResults.value = result.all;
-  eligibilityResults.value = result.eligible;
-  visibleFields.value = result.visibleFields;
-  console.log("PREFILL", prefillData);
-  console.log("MISSING SIZE", result.allMissingFields.length);
-  allMissingFieldsSize.value = new Set([
-    ...result.allMissingFields,
-    ...result.visibleFields,
-  ]).size;
-  console.log("form", visibleFields.value);
-
-  setTimeout(() => {
-    isCheckingEligibility.value = false;
-  }, 0);
-}
-
-function showMessage(
-  msg: string,
-  type: "success" | "info" | "warning" | "emergency"
-) {
-  message.value = msg;
-  messageType.value = type;
-  setTimeout(() => {
-    message.value = "";
-  }, 3000);
-}
 </script>
 
 <style>
@@ -532,6 +322,7 @@ function showMessage(
 @import "@muenchen/muc-patternlab-vue/assets/css/custom-style.css";
 @import "@muenchen/muc-patternlab-vue/style.css";
 @import "../public/checklist-styles.css";
+@import "./styles/tooltip.css";
 
 /* Form styles - unscoped so they apply to child components */
 .m-form-group {
@@ -609,80 +400,75 @@ input[type="date"].m-textfield {
   margin-right: 8px;
   cursor: pointer;
 }
-
-.explanation-tooltip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  margin-left: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--mde-color-brand-mde-blue);
-  background: var(--mde-color-neutral-beau-blue-x-light);
-  border: 1px solid var(--mde-color-brand-mde-blue);
-  border-radius: 50%;
-  cursor: help;
-  vertical-align: middle;
-  position: relative;
-}
-
-.explanation-tooltip:hover {
-  background: var(--mde-color-brand-mde-blue);
-  color: white;
-}
-
-.explanation-tooltip::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--mde-color-brand-mde-blue-dark, #1a365d);
-  color: white;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.4;
-  white-space: normal;
-  width: max-content;
-  max-width: 280px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease;
-  z-index: 1000;
-  pointer-events: none;
-}
-
-.explanation-tooltip::before {
-  content: "";
-  position: absolute;
-  bottom: calc(100% + 2px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: var(--mde-color-brand-mde-blue-dark, #1a365d);
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease;
-  z-index: 1001;
-}
-
-.explanation-tooltip:hover::after,
-.explanation-tooltip:hover::before {
-  opacity: 1;
-  visibility: visible;
-}
 </style>
 
 <style scoped>
+/* Utility classes */
+.full-width {
+  width: 100%;
+}
+
+/* Solid Pod section styles */
+.solid-pod-section-spacing {
+  margin-bottom: 24px;
+}
+
+.solid-pod-header {
+  margin-bottom: 8px;
+}
+
+.solid-pod-title {
+  margin-bottom: 0;
+}
+
+.solid-pod-form-group {
+  margin-bottom: 16px;
+}
+
+.solid-pod-description {
+  margin-top: 16px;
+}
+
+.solid-connected-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.solid-connection-info {
+  font-size: 0.85em;
+  color: var(--mde-color-neutral-grey-dark);
+  background: rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.solid-webid {
+  word-break: break-all;
+}
+
+.solid-webid-label {
+  font-weight: 600;
+}
+
+.solid-logout-button {
+  flex-shrink: 0;
+}
+
+.solid-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.solid-save-button {
+  flex: 1;
+}
+
+/* Component layout */
 .m-component-form {
   padding-top: 2rem;
 }

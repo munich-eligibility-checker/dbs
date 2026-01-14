@@ -2,7 +2,13 @@ import type {
   FormData,
   FormDataField,
 } from "@/types/EligibilityCheckInterface";
-import type { FieldMetadata } from "@/types/FieldMetadata";
+import type {
+  FieldMetadata,
+  FieldOption,
+  FieldValidation,
+} from "@/types/FieldMetadata";
+
+import { EligibilityConstants } from "./constants";
 
 /**
  * Helper function to calculate age from date of birth
@@ -165,9 +171,7 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     type: "numberArray",
     placeholder: "z.B. 5, 8, 12",
     visibleWhen: (data: FormData) =>
-      data.numberOfChildren === undefined
-        ? false
-        : data.numberOfChildren > 0,
+      data.numberOfChildren === undefined ? false : data.numberOfChildren > 0,
   },
   livesWithParents: {
     name: "livesWithParents",
@@ -273,7 +277,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     visibleWhen: (data: FormData) =>
       data.receivesPension === undefined || data.dateOfBirth === undefined
         ? undefined
-        : data.receivesPension !== true && calculateAge(data.dateOfBirth) < 67,
+        : data.receivesPension !== true &&
+          calculateAge(data.dateOfBirth) < EligibilityConstants.PENSION_AGE,
   },
   receivesUnemploymentBenefit1: {
     name: "receivesUnemploymentBenefit1",
@@ -325,16 +330,46 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "receivesStudentAid",
     label: "Beziehe BAföG",
     type: "yesno",
+    defaultWhenHidden: false,
     visibleWhen: (data: FormData) =>
       data.isStudent === undefined ? undefined : data.isStudent === true,
   },
 };
 
-/**
- * Get field metadata for a specific field
- */
 export function getFieldMetadata(field: FormDataField): FieldMetadata {
   return FIELD_METADATA[field];
+}
+
+export function getFieldPlaceholder(field: FormDataField): string | undefined {
+  const metadata = FIELD_METADATA[field];
+  if (
+    metadata.type === "text" ||
+    metadata.type === "number" ||
+    metadata.type === "numberArray"
+  ) {
+    return metadata.placeholder;
+  }
+  return undefined;
+}
+
+export function getFieldOptions(
+  field: FormDataField
+): FieldOption[] | undefined {
+  const metadata = FIELD_METADATA[field];
+  if (metadata.type === "select") {
+    return metadata.options;
+  }
+  return undefined;
+}
+
+export function getFieldValidation(
+  field: FormDataField
+): FieldValidation | undefined {
+  const metadata = FIELD_METADATA[field];
+  if (metadata.type === "number") {
+    return metadata.validation;
+  }
+  return undefined;
 }
 
 /**

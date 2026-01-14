@@ -6,9 +6,7 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class HilfeZumLebensunterhaltCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "Hilfe zum Lebensunterhalt")
       .failIfField(
         "residenceInGermany",
@@ -22,7 +20,7 @@ export class HilfeZumLebensunterhaltCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "workAbility",
-        ({ workAbility }) => workAbility !== 'none',
+        ({ workAbility }) => workAbility !== "none",
         "Hilfe zum Lebensunterhalt ist für Personen vorgesehen, die vorübergehend nicht arbeiten können."
       )
       .failIfField(
@@ -36,7 +34,8 @@ export class HilfeZumLebensunterhaltCheck extends AbstractEligibilityCheck {
         "Bezieher von Bürgergeld sind nicht für Hilfe zum Lebensunterhalt berechtigt."
       )
       .orElseSuccess(() => ({
-        reason: "Sie erfüllen die Grundvoraussetzungen für Hilfe zum Lebensunterhalt. Diese Leistung richtet sich an Menschen, die vorübergehend nicht arbeiten können.",
+        reason:
+          "Sie erfüllen die Grundvoraussetzungen für Hilfe zum Lebensunterhalt. Diese Leistung richtet sich an Menschen, die vorübergehend nicht arbeiten können.",
         url: "https://www.bmas.de/DE/Soziales/Sozialhilfe/Leistungen-der-Sozialhilfe/hilfe-zum-lebensunterhalt.html",
       }));
   }

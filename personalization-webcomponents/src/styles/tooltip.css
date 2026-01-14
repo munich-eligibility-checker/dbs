@@ -16,6 +16,7 @@
 }
 
 .explanation-tooltip:hover {
+  position: relative;
   background: var(--mde-color-brand-mde-blue);
   color: white;
 }
@@ -43,6 +44,7 @@
     opacity 0.2s ease,
     visibility 0.2s ease;
   pointer-events: none;
+  z-index: 1000;
 }
 
 .explanation-tooltip::before {
@@ -58,6 +60,7 @@
   transition:
     opacity 0.2s ease,
     visibility 0.2s ease;
+  z-index: 1000;
 }
 
 .explanation-tooltip:hover::after,

@@ -6,14 +6,17 @@ import type {
 import { AbstractEligibilityCheck } from "./AbstractEligibilityCheck";
 
 export class WohnGeldCheck extends AbstractEligibilityCheck {
-  evaluate(
-    formData: FormData
-  ): EligibilityResult {
+  evaluate(formData: FormData): EligibilityResult {
     return this.rules(formData, "Wohngeld")
       .failIfField(
         "receivesUnemploymentBenefit2",
         ({ receivesUnemploymentBenefit2 }) => receivesUnemploymentBenefit2,
         "Bezieher von Arbeitslosengeld II sind nicht berechtigt für Wohngeld."
+      )
+      .failIfField(
+        "isStudent",
+        ({ isStudent }) => !isStudent,
+        "Studenten sind nicht berechtigt für Wohngeld."
       )
       .failIfField(
         "monthlyRent",

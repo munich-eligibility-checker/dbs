@@ -217,8 +217,9 @@ export class EligibilityCheckRegistry {
   }
 
   /**
-   * Calculate progress based on filled fields vs total needed fields
-   * Hidden fields with defaults are counted as filled
+   * Calculate progress based on filled fields vs total needed fields.
+   * Hidden fields (where visibleWhen returns false) are excluded from the calculation
+   * since they get default values automatically and don't require user input.
    */
   private calculateProgress(
     formData: FormData,
@@ -230,22 +231,34 @@ export class EligibilityCheckRegistry {
     progressPercent: number;
     isComplete: boolean;
   } {
-    // Count how many visible fields are filled
-    const filledCount = visibleFields.filter((field) => {
+    // Filter out hidden fields from both visible and missing fields
+    const actuallyVisibleFields = visibleFields.filter((field) => {
       const metadata = getFieldMetadata(field);
+      // Exclude fields that are hidden (visibleWhen returns false)
+      return !(metadata.visibleWhen && metadata.visibleWhen(formData) === false);
+    });
 
-      // If field is hidden due to visibleWhen condition, count as filled
-      if (metadata.visibleWhen && metadata.visibleWhen(formData) === false) {
-        return true;
+    const actuallyVisibleMissingFields = Array.from(allMissingFields).filter(
+      (field) => {
+        const metadata = getFieldMetadata(field);
+        // Exclude fields that are hidden (visibleWhen returns false)
+        return !(
+          metadata.visibleWhen && metadata.visibleWhen(formData) === false
+        );
       }
+    );
 
-      // Check if field has a value
+    // Count how many actually visible fields are filled
+    const filledCount = actuallyVisibleFields.filter((field) => {
       const value = formData[field];
       return value !== undefined && value !== null && value !== "";
     }).length;
 
-    // Total is the combination of all missing fields and visible fields
-    const totalCount = new Set([...allMissingFields, ...visibleFields]).size;
+    // Total is only the fields that are actually visible (not hidden by visibleWhen)
+    const totalCount = new Set([
+      ...actuallyVisibleMissingFields,
+      ...actuallyVisibleFields,
+    ]).size;
 
     const progressPercent =
       totalCount === 0 ? 0 : Math.round((filledCount / totalCount) * 100);

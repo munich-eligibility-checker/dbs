@@ -46,7 +46,15 @@ export function useSolidPod(options: UseSolidPodOptions = {}) {
   }
 
   function getPodRoot(webIdValue: string): string {
-    return new URL(webIdValue).origin + "/";
+    const url = new URL(webIdValue);
+    const pathSegments = url.pathname.split('/').filter(s => s.length > 0);
+    
+    // If there's at least one path segment (e.g., /test1/), include it in the pod root
+    if (pathSegments.length > 0) {
+      return `${url.origin}/${pathSegments[0]}/`;
+    }
+    
+    return url.origin + "/";
   }
 
   async function connect(): Promise<void> {
@@ -116,9 +124,7 @@ export function useSolidPod(options: UseSolidPodOptions = {}) {
     loading.value = true;
     try {
       const podRoot = getPodRoot(webId.value);
-      const url = new URL(podRoot);
-      const baseUrl = url.origin;
-      const fileUrl = `${baseUrl}/${SOLID_DATA_FILE}`;
+      const fileUrl = `${podRoot}${SOLID_DATA_FILE}`;
 
       const file = await getFile(fileUrl, { fetch: solidFetch });
       const text = await file.text();

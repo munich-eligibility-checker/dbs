@@ -81,7 +81,7 @@ export class EligibilityCheckRegistry {
   private nextSectionStrategy: NextSectionStrategy;
 
   constructor(strategy?: NextSectionStrategy) {
-    this.nextSectionStrategy = strategy ?? new OrderedNextSectionStrategy();
+    this.nextSectionStrategy = strategy ?? new RapidQuestionStrategy();
     this.registerDefaultChecks();
   }
 

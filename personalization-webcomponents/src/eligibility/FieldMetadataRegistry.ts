@@ -268,6 +268,8 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
     name: "hasFinancialHardship",
     label: "Finanzielle Notlage",
     type: "yesno",
+    explanation:
+      "Eine finanzielle Notlage bedeutet, dass jemand nicht genug Geld hat, um die grundlegenden Lebenshaltungskosten zu decken (Miete, Strom, Essen), oft aufgrund von Arbeitslosigkeit, geringem Einkommen, unerwarteten Ausgaben (Krankheit, Verlust) oder Schulden, was zu akuten Zahlungsschwierigkeiten und existenziellen Existenzängsten führt.",
   },
   workAbility: {
     name: "workAbility",

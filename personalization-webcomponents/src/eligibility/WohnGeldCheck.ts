@@ -16,7 +16,7 @@ export class WohnGeldCheck extends AbstractEligibilityCheck {
       )
       .failIfField(
         "isStudent",
-        ({ isStudent }) => !isStudent,
+        ({ isStudent }) => isStudent,
         "Studenten sind nicht berechtigt für Wohngeld."
       )
       .failIfField(

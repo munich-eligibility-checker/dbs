@@ -6,7 +6,7 @@ import type {
 } from "@/types/EligibilityCheckInterface";
 import type { VisibleSection } from "@/types/FieldMetadata";
 
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 import { EligibilityCheckRegistry } from "@/eligibility/EligibilityCheckRegistry";
 import { getFieldMetadata } from "@/eligibility/FieldMetadataRegistry";
@@ -25,27 +25,12 @@ export function useEligibilityForm() {
   const visibleSections = ref<VisibleSection[]>([]);
   const isCheckingEligibility = ref(false);
 
+  // Progress tracking
+  const filledFieldsCount = ref<number>(0);
+  const progressPercent = ref<number>(0);
+  const isFormComplete = ref<boolean>(false);
+
   const eligibilityRegistry = new EligibilityCheckRegistry();
-
-  const filledFieldsCount = computed(() => {
-    return visibleFields.value.filter(
-      (field) =>
-        formFields.value[field] !== undefined &&
-        formFields.value[field] !== null &&
-        formFields.value[field] !== ""
-    ).length;
-  });
-
-  const progressPercent = computed(() => {
-    if (allMissingFieldsSize.value === 0) return 0;
-    return Math.round(
-      (filledFieldsCount.value / allMissingFieldsSize.value) * 100
-    );
-  });
-
-  const isFormComplete = computed(() => {
-    return progressPercent.value === 100 && filledFieldsCount.value > 0;
-  });
 
   function shouldShowField(fieldName: FormDataField): boolean {
     if (!visibleFields.value.includes(fieldName)) return false;
@@ -70,18 +55,21 @@ export function useEligibilityForm() {
       prefillData
     );
 
-    const prefilledData = result.prefilledFields;
-    formFields.value = { ...formFields.value, ...prefilledData };
-
+    // Use the updated form data directly from the registry
+    formFields.value = result.updatedFormData;
+    
+    // Update all state from the registry result
     visibleSections.value = result.visibleSections;
     prefilledFields.value = result.prefilledFields;
     allEligibilityResults.value = result.all;
     eligibilityResults.value = result.eligible;
     visibleFields.value = result.visibleFields;
-    allMissingFieldsSize.value = new Set([
-      ...result.allMissingFields,
-      ...result.visibleFields,
-    ]).size;
+    allMissingFieldsSize.value = result.progress.totalFieldsCount;
+    
+    // Update progress tracking from registry
+    filledFieldsCount.value = result.progress.filledFieldsCount;
+    progressPercent.value = result.progress.progressPercent;
+    isFormComplete.value = result.progress.isComplete;
 
     // Use setTimeout to allow the current evaluation to complete
     setTimeout(() => {

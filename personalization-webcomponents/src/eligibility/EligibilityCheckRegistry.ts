@@ -20,7 +20,10 @@ import { GrundsicherungCheck } from "@/eligibility/GrundsicherungCheck";
 import { HilfeZumLebensunterhaltCheck } from "@/eligibility/HilfeZumLebensunterhaltCheck";
 import { KindergeldCheck } from "@/eligibility/KindergeldCheck";
 import { KinderzuschlagCheck } from "@/eligibility/KinderzuschlagCheck";
-import { RapidQuestionStrategy } from "@/eligibility/NextSectionStrategy";
+import {
+  OrderedNextSectionStrategy,
+  RapidQuestionStrategy,
+} from "@/eligibility/NextSectionStrategy";
 import { WohnGeldCheck } from "@/eligibility/WohnGeldCheck";
 
 export type PrefilledFields = {
@@ -35,8 +38,21 @@ export interface PrefilledEligibilityEvaluationResult {
   /** Sections with metadata (id, title, fields) for dynamic rendering */
   visibleSections: VisibleSection[];
   prefilledFields: PrefilledFields;
+  /** The complete updated form data (original + prefilled + defaults for hidden fields) */
+  updatedFormData: FormData;
   /** The number of all unique fields that checks report as missing */
   allMissingFields: FormDataField[];
+  /** Progress tracking */
+  progress: {
+    /** Number of fields filled (including hidden fields with defaults) */
+    filledFieldsCount: number;
+    /** Total number of fields needed */
+    totalFieldsCount: number;
+    /** Progress percentage (0-100) */
+    progressPercent: number;
+    /** Whether the form is complete (all fields filled) */
+    isComplete: boolean;
+  };
 }
 
 /**
@@ -65,7 +81,7 @@ export class EligibilityCheckRegistry {
   private nextSectionStrategy: NextSectionStrategy;
 
   constructor(strategy?: NextSectionStrategy) {
-    this.nextSectionStrategy = strategy ?? new RapidQuestionStrategy();
+    this.nextSectionStrategy = strategy ?? new OrderedNextSectionStrategy();
     this.registerDefaultChecks();
   }
 
@@ -201,24 +217,78 @@ export class EligibilityCheckRegistry {
   }
 
   /**
+   * Calculate progress based on filled fields vs total needed fields
+   * Hidden fields with defaults are counted as filled
+   */
+  private calculateProgress(
+    formData: FormData,
+    visibleFields: FormDataField[],
+    allMissingFields: Set<FormDataField>
+  ): {
+    filledFieldsCount: number;
+    totalFieldsCount: number;
+    progressPercent: number;
+    isComplete: boolean;
+  } {
+    // Count how many visible fields are filled
+    const filledCount = visibleFields.filter((field) => {
+      const metadata = getFieldMetadata(field);
+
+      // If field is hidden due to visibleWhen condition, count as filled
+      if (metadata.visibleWhen && metadata.visibleWhen(formData) === false) {
+        return true;
+      }
+
+      // Check if field has a value
+      const value = formData[field];
+      return value !== undefined && value !== null && value !== "";
+    }).length;
+
+    // Total is the combination of all missing fields and visible fields
+    const totalCount = new Set([...allMissingFields, ...visibleFields]).size;
+
+    const progressPercent =
+      totalCount === 0 ? 0 : Math.round((filledCount / totalCount) * 100);
+    const isComplete = progressPercent === 100 && filledCount > 0;
+
+    return {
+      filledFieldsCount: filledCount,
+      totalFieldsCount: totalCount,
+      progressPercent,
+      isComplete,
+    };
+  }
+
+  /**
    * Build the final result object
    */
   private buildResult(
     allResults: EligibilityResult[],
     allMissingFields: Set<FormDataField>,
-    prefilledFields: PrefilledFields
+    prefilledFields: PrefilledFields,
+    originalFormData: FormData,
+    updatedFormData: FormData
   ): PrefilledEligibilityEvaluationResult {
     const eligible = allResults.filter((result) => result.eligible === true);
     const ineligible = allResults.filter((result) => result.eligible === false);
+    const visibleFields = Array.from(this.visibleFields);
+
+    const progress = this.calculateProgress(
+      updatedFormData,
+      visibleFields,
+      allMissingFields
+    );
 
     return {
       eligible,
       ineligible,
       all: allResults,
       visibleSections: this.getVisibleSectionsWithMetadata(),
-      visibleFields: Array.from(this.visibleFields),
+      visibleFields,
       prefilledFields,
+      updatedFormData,
       allMissingFields: Array.from(allMissingFields),
+      progress,
     };
   }
 
@@ -303,18 +373,30 @@ export class EligibilityCheckRegistry {
 
       // If not all fields were prefilled, return immediately
       if (!allPrefilled) {
+        const updatedFormData = applyDefaultsForHiddenFields({
+          ...processedFormData,
+          ...prefilledFields,
+        });
         return this.buildResult(
           evaluation.results,
           evaluation.missingFields,
-          prefilledFields
+          prefilledFields,
+          formData,
+          updatedFormData
         );
       }
     }
 
+    const finalFormData = applyDefaultsForHiddenFields({
+      ...processedFormData,
+      ...prefilledFields,
+    });
     return this.buildResult(
       evaluation.results,
       evaluation.missingFields,
-      prefilledFields
+      prefilledFields,
+      formData,
+      finalFormData
     );
   }
 }

@@ -281,10 +281,9 @@ export const FIELD_METADATA: Record<FormDataField, FieldMetadata> = {
       { value: "none", label: "Nicht arbeitsfähig" },
     ],
     visibleWhen: (data: FormData) =>
-      data.receivesPension === undefined || data.dateOfBirth === undefined
+      data.receivesPension === undefined
         ? undefined
-        : data.receivesPension !== true &&
-          calculateAge(data.dateOfBirth) < EligibilityConstants.PENSION_AGE,
+        : data.receivesPension !== true,
     defaultWhenHidden: "none",
   },
   receivesUnemploymentBenefit1: {

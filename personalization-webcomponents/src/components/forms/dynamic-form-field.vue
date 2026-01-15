@@ -163,6 +163,7 @@
         :label="label"
         :name="fieldName"
         :explanation="explanation"
+        :class="{ 'has-prefilled': isPrefilled }"
         @update:model-value="$emit('update:modelValue', $event)"
       />
       <prefilled-indicator v-if="isPrefilled" />
@@ -410,5 +411,9 @@ function onNumberArrayBlur() {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.has-prefilled {
+  margin-bottom: 6px !important;
 }
 </style>

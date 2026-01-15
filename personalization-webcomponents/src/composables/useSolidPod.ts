@@ -1,20 +1,14 @@
 import type { FormData } from "@/types/EligibilityCheckInterface";
 
 import { getFile, overwriteFile } from "@inrupt/solid-client";
-import {
-  getDefaultSession,
-  handleIncomingRedirect,
-  login,
-  logout,
-  fetch as solidFetch,
-} from "@inrupt/solid-client-authn-browser";
+import { getDefaultSession, handleIncomingRedirect, login, logout, fetch as solidFetch } from "@inrupt/solid-client-authn-browser";
 import { ref } from "vue";
 
 import { createErrorMessage, SolidErrorMessages } from "@/util/errorFormatter";
 
 const SOLID_DATA_FILE = "private/personalization/eligibility-data.json";
 
-const DEFAULT_ISSUER = "https://solidcommunity.net";
+const DEFAULT_ISSUER = "https://m-pod.lcarilla.de";
 
 export interface UseSolidPodOptions {
   onMessage?: (
